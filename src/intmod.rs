@@ -105,11 +105,20 @@ impl<'a,'b> Mul<&'b Mod> for &'b Mod {
         }
     }
 
+    impl<'a> Mul<&'a Mod> for Mod {
+        type Output = Mod;
+        fn mul(self, rhs: &'a Mod) -> Self::Output {
+            if rhs.modulus==self.modulus {
+                Mod::new(&self.n*&rhs.n,self.modulus.clone())}
+                else {panic!("You can not multiply two different mod!")}
+        }
+    }
+
 impl Neg for Mod{
         type Output = Mod;
         fn neg(self) -> Self::Output {
             match self.modulus.0.clone() {
-                Some(prime)=>Mod {n:prime-&self.n,modulus:self.modulus},
+                Some(prime)=>Mod::new(prime-&self.n,self.modulus.clone()),
                 None=>panic!("There's no inverse!")
             }
         }

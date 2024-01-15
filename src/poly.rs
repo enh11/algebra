@@ -1,6 +1,7 @@
 use core::fmt;
-use std::{ops::{Add, Sub, Mul, Div, Rem}, cmp::max};
-use num_traits::Zero;
+use std::{ops::{Add, Sub, Mul, Div, Rem, Neg}, cmp::max, slice::Windows};
+use num_bigint::BigInt;
+use num_traits::{Zero, One};
 
 use crate::field::Field;
 #[derive(Debug, PartialEq, Clone)]
@@ -49,6 +50,12 @@ impl <F:Field> Poly <F> {
         }
         vec.len()-1
     }
+    pub fn remove_last_zeros(vec:&mut Vec<F>)->Vec<F>{
+        while vec.last().is_some() && vec.last().unwrap().is_zero() {
+            vec.remove(vec.len()-1);}
+            vec.to_vec()
+        
+    }
     pub fn extend(&self,new_len:usize)->Vec<F> {
         let zero=self.coeffs[0].zero();
         let mut new_coeffs: Vec<F>=Vec::with_capacity(new_len);
@@ -66,9 +73,17 @@ impl <F:Field> Poly <F> {
         }
         
     } 
-    pub fn zero()->Poly<F> {
-        Poly::new_from_coeffs(&vec![])
+    pub fn one(&self)->Poly<F>{
+        let coeff=[self.coeffs[0].one()];
+        Poly::new_from_coeffs(&coeff)
+    }
+    pub fn zero(&self)->Poly<F> {
+        let coeff=[self.coeffs[0].zero()];
+        Poly::new_from_coeffs(&coeff)
     } 
+    pub fn is_zero(&self)->bool{
+        self.coeffs.is_empty()
+    }
 }
 /// # Example
 /// ```
@@ -92,6 +107,8 @@ impl <F:Field> Poly <F> {
 impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
     type Output=Poly<F>;
     fn add(self, rhs: Self) -> Self::Output {
+        if rhs.is_zero(){return self.clone();}
+        if self.is_zero(){return rhs.clone();}
         let max_len=max(self.coeffs.len(), rhs.coeffs.len());
         let mut v1=self.coeffs.clone();
         let mut v2=rhs.coeffs.clone();
@@ -107,12 +124,27 @@ impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
         for i in 0..v1.len(){
             sum.push(v1[i].clone()+v2[i].clone());
         }
+        sum=Poly::remove_last_zeros(&mut sum);
 Poly::new_from_coeffs(&sum)
     }
+}
+impl <F:Field> Neg for Poly<F> {
+    type Output = Self;
+    fn neg(mut self) -> Self::Output {
+        if self.is_zero(){return self.clone();}
+        for i in 0..self.len(){
+            self.coeffs[i]=self.coeffs[i].clone().neg()
+        }
+    
+    Poly::new_from_coeffs(&self.coeffs)
+    }
+    
 }
 impl <'a,'b,F:Field>Sub<&'b Poly<F>>for  &'b Poly<F> {
     type Output=Poly<F>;
     fn sub(self, rhs: Self) -> Self::Output {
+        if rhs.is_zero(){return self.clone();}
+        if self.is_zero(){return rhs.clone().neg();}
         let max_len=max(self.coeffs.len(), rhs.coeffs.len());
         let mut v1=self.coeffs.clone();
         let mut v2=rhs.coeffs.clone();
@@ -121,16 +153,19 @@ impl <'a,'b,F:Field>Sub<&'b Poly<F>>for  &'b Poly<F> {
         } else if self.len()>rhs.len(){
             v2=rhs.extend(max_len);
         }
-        let mut sum=Vec::with_capacity(v1.len());
+        let mut sub=Vec::with_capacity(v1.len());
         for i in 0..v1.len(){
-            sum.push(v1[i].clone()-v2[i].clone());
+            sub.push(v1[i].clone()-v2[i].clone());
         }
-Poly::new_from_coeffs(&sum)
+    sub=Poly::remove_last_zeros(&mut sub);
+Poly::new_from_coeffs(&sub)
     }
 }
 impl <'a,'b,F:Field>Mul<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;
     fn mul(self, rhs: Self) -> Self::Output {
+        if self.is_zero(){return rhs.clone()}
+        if rhs.is_zero(){return self.clone();}
         let zero=self.coeffs[0].clone().zero();
         let new_len=self.coeffs.len()+rhs.coeffs.len()-1;
         let mut prod=vec![zero;new_len];
@@ -139,16 +174,17 @@ impl <'a,'b,F:Field>Mul<&'b Poly<F>>for  &'b Poly<F>{
                 prod[i+j]=prod[i+j].clone()+self.coeffs[i].clone()*rhs.coeffs[j].clone();
             }
         }
+        prod=Poly::remove_last_zeros(&mut prod);
 Poly::new_from_coeffs(&prod.to_vec())
     }
 }
-impl <'a,'b,F:Field>Div<&'b Poly<F>>for  &'b Poly<F>{
+impl <'a,'b,F:Field + std::fmt::Debug>Div<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;
     fn div(self, rhs: &'b Poly<F>) -> Self::Output{
         Poly::div_rem(self, rhs)[0].clone()
 }
 }
-impl <'a,'b,F:Field>Rem<&'b Poly<F>>for  &'b Poly<F>{
+impl <'a,'b,F:Field + std::fmt::Debug>Rem<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;
     fn rem(self, rhs: &'b Poly<F>) -> Self::Output{
         Poly::div_rem(self, rhs)[1].clone()
@@ -171,21 +207,68 @@ impl <F:Field+std::fmt::Display+std::cmp::PartialOrd>Poly<F> {
     }
     
 }
-
-impl <F:Field>Poly<F> {
+impl <F:Field + std::fmt::Debug> Poly<F>{
     pub fn div_rem(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
-            let zero=g.coeffs[0].clone().zero();
-            let mut rem=g.coeffs.clone();
-            let new_len=g.len()-h.len()+1;
-            let mut q: Vec<F>=vec![zero;new_len];
-            if g.len()<h.len() {return [Poly::zero(),g.clone()].to_vec();}
-            let coeff=h.coeffs.last().unwrap().inverse();
-            for i in (0..new_len).rev() {
-                q[i]=coeff.clone()*rem[i+h.len()-1].clone();
-                for j in 0..h.len() {
-                    rem[i+j]=rem[i+j].clone()-q[i].clone()*h.coeffs[j].clone();
-                }
-                }  
-    [Poly::new_from_coeffs(&q),Poly::new_from_coeffs(&rem)].to_vec()
+        let zero=g.coeffs[0].clone().zero();
+        let mut rem=g.coeffs.clone();
+        let new_len=g.len()-h.len()+1;
+        let mut q: Vec<F>=vec![zero;new_len];
+        if g.len()<h.len() {return [g.zero(),g.clone()].to_vec();}
+        let coeff=h.coeffs.last().unwrap().inverse();
+        for i in (0..new_len).rev() {
+            q[i]=coeff.clone()*rem[i+h.len()-1].clone();
+            for j in 0..h.len() {
+                rem[i+j]=rem[i+j].clone()-q[i].clone()*h.coeffs[j].clone();
+            }
+            }
+            rem=Poly::remove_last_zeros(&mut rem);
+            q=Poly::remove_last_zeros(&mut q);
+[Poly::new_from_coeffs(&q),Poly::new_from_coeffs(&rem)].to_vec()
+}
+}
+impl <F:Field + std::fmt::Debug> Poly<F>{
+pub fn evaluation(&self,alpha:&F)->F {
+    let mut value = self.coeffs[0].zero();
+    for i in (0..self.len()).rev(){
+        value=value*alpha.clone()+self.coeffs[i].clone();
     }
+    value
+}
+pub fn normal_poly(&mut self)->Poly<F> {
+    let c=self.coeffs.last().unwrap().inverse();
+    for i in 0..self.len(){self.coeffs[i]=self.coeffs[i].clone()*&c}
+    Poly::new_from_coeffs(&self.coeffs)
+    
+}
+pub fn multiple(&mut self, alpha:&F)->Poly<F>{
+    for i in 0..self.len(){
+    self.coeffs[i]=self.coeffs[i].clone()*alpha;}
+    Poly::new_from_coeffs(&self.coeffs)
+}
+pub fn gcdext(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
+    let mut r0=g.clone(); let mut r1=h.clone();
+    let mut s0=g.one(); let mut s1: Poly<F>=h.zero();
+    let mut t0: Poly<F>=g.zero(); let mut t1=g.one();
+    let mut div_rem:Vec<Poly<F>>;
+    while !r1.is_zero(){
+        let div_rem=Poly::div_rem(&r0,&r1);
+        r0=r1;
+        r1=div_rem[1].clone();
+        let aux_s0=s0.clone();
+        s0=s1.clone();
+        let aux_t0=t0.clone();
+        t0=t1.clone(); 
+        s1=&aux_s0-&(&s1*&div_rem[0].clone());
+        t1=&aux_t0-&(&t1*&div_rem[0].clone());
+    }
+    
+    let d=Poly::new_from_coeffs(&r0.coeffs);
+    let u=Poly::new_from_coeffs(&s0.coeffs);
+    let v=Poly::new_from_coeffs(&t0.coeffs);
+    [u,v,d].to_vec()
+
+
+
+        
+}
 }

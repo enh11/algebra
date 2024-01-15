@@ -11,14 +11,16 @@ use num_bigint::RandBigInt;
 
 fn main() {
 let z13=PrimeField(Some(BigInt::from(13)));
-let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3))]);
-let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
+let modd=Mod::new(BigInt::from(13), z13.clone());
+println!("{:?}",modd);
+let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(9)), z13.new(BigInt::from(0)),z13.new(BigInt::from(1))]);
+let p2 = poly!(z13.new(BigInt::from(0)), z13.new(BigInt::from(1)));
 println!("poly1 {}",p1);
 println!("poly2 {}",p2);
-let q=&p1/&p2;
-let r = &p1%&p2;
-println!("quotient is {} and reminder is {}",q,r);
-
+let bez=Poly::gcdext(&p1,&p2);
+println!("bezout: u={},v={},d={}",bez[0],bez[1],bez[2]);
+let check=&(&p1*&bez[0])+&(&p2*&bez[1]);
+println!("check {}",check);
 
 
     

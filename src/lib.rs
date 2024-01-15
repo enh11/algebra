@@ -2,6 +2,9 @@
 //! Good references for this algorithm is [H.Cohen A course in computational number theory] 
 //! and [H. Cohen Handbook ok elliptic and hyperelliptic curves cryptography]
 //!
+use num_bigint::BigInt;
+
+use crate::poly::Poly;
 
 pub mod integers;
 pub mod intmod;
@@ -12,8 +15,9 @@ pub mod field;
 #[cfg(test)]
 mod tests {
     use num_bigint::BigInt;
-    use crate::{integers::IntUtilities, intmod::{Mod, PrimeField}};
-
+    use crate::intmod::PrimeField;
+    use crate::{integers::IntUtilities, intmod::{Mod}};
+    use crate::poly::Poly;
 #[test]
 fn test_gcd() {
     let a=BigInt::from(60u8);
@@ -41,6 +45,18 @@ fn test_chinese() {
     let b=Mod::new(BigInt::from(4),PrimeField(Some(BigInt::from(13))));
     let expected_mod=Some(Mod::new(BigInt::from(30),PrimeField(Some(BigInt::from(143)))));
     assert_eq!(expected_mod,Mod::chinese(&[a,b].to_vec()));
+
+}
+#[test]
+fn test_gcdext_polynomial(){
+    let z13=PrimeField(Some(BigInt::from(13)));
+    let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(9)), z13.new(BigInt::from(0)),z13.new(BigInt::from(1))]);
+    let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(0)), z13.new(BigInt::from(1))]);
+    let expected_pol_d=Poly::new_from_coeffs(&[z13.new(BigInt::from(9))]);
+    let expected_pol_u=Poly::new_from_coeffs(&[z13.new(BigInt::from(1))]);
+    let expected_pol_v=Poly::new_from_coeffs(&[z13.new(BigInt::from(0)),z13.new(BigInt::from(12))]);
+let bez=Poly::gcdext(&p1,&p2);
+assert_eq!(bez,[expected_pol_u,expected_pol_v,expected_pol_d]);
 
 }
 }

@@ -1,4 +1,4 @@
-use std::{ops::{Add, Div, Mul, Neg, Sub}};
+use std::{ops::{Add, Div, Mul, Neg, Sub}, iter::Sum};
 
 
 
@@ -8,6 +8,7 @@ where
         +Clone
         + Add<Self, Output = Self>
         + Mul<Self, Output = Self>
+        +for<'a> Mul<&'a Self,Output = Self>
         + Neg<Output = Self>
         + Sub<Self, Output = Self>
         + Div<Self, Output = Self>,
