@@ -215,14 +215,6 @@ impl Mod {
 /// assert_eq!(expected_mod,chinese);
 /// 
 /// ```
-/// 
-
-
-
-
-/// 
-/// assert_eq!(z,[BigInt::from(-3),BigInt::from(8),BigInt::from(12)]);
-/// ```
     pub fn chinese(moduli:&Vec<Mod>)->Option<Mod>{
         let mut m=moduli[0].modulus.0.clone().unwrap();
         let mut x=moduli[0].n.clone();

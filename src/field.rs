@@ -1,4 +1,4 @@
-use std::{ops::{Add, Div, Mul, Neg, Sub}, iter::Sum};
+use std::{ops::{Add, Div, Mul, Neg, Sub}, iter::Sum, fmt::Display};
 
 
 
@@ -6,6 +6,10 @@ pub trait Field
 where
     Self:Sized
         +Clone
+        +Display
+        +PartialEq
+        +PartialOrd
+        +Eq
         + Add<Self, Output = Self>
         + Mul<Self, Output = Self>
         +for<'a> Mul<&'a Self,Output = Self>

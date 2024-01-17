@@ -4,11 +4,11 @@ use num_bigint::BigInt;
 use num_traits::{Zero, One};
 
 use crate::field::Field;
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq,PartialOrd,Ord)]
 pub struct Poly<T> {
     pub coeffs: Vec<T>,
 }
-impl <F:Field+std::fmt::Display+std::cmp::PartialOrd>fmt::Display for Poly<F> {
+impl <F:Field>fmt::Display for Poly<F> {
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         
@@ -83,6 +83,9 @@ impl <F:Field> Poly <F> {
     } 
     pub fn is_zero(&self)->bool{
         self.coeffs.is_empty()
+    }
+    pub fn is_one(&self)->bool{
+        self==&self.one()
     }
 }
 /// # Example
@@ -178,19 +181,19 @@ impl <'a,'b,F:Field>Mul<&'b Poly<F>>for  &'b Poly<F>{
 Poly::new_from_coeffs(&prod.to_vec())
     }
 }
-impl <'a,'b,F:Field + std::fmt::Debug>Div<&'b Poly<F>>for  &'b Poly<F>{
+impl <'a,'b,F:Field>Div<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;
     fn div(self, rhs: &'b Poly<F>) -> Self::Output{
         Poly::div_rem(self, rhs)[0].clone()
 }
 }
-impl <'a,'b,F:Field + std::fmt::Debug>Rem<&'b Poly<F>>for  &'b Poly<F>{
+impl <'a,'b,F:Field>Rem<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;
     fn rem(self, rhs: &'b Poly<F>) -> Self::Output{
         Poly::div_rem(self, rhs)[1].clone()
 }
 }
-impl <F:Field+std::fmt::Display+std::cmp::PartialOrd>Poly<F> {
+impl <F:Field>Poly<F> {
     pub fn print_poly(&self,x:&str)->String{
         let zero=self.coeffs[0].clone().zero();
         let mut s: Vec<String> = Vec::new();
@@ -207,13 +210,13 @@ impl <F:Field+std::fmt::Display+std::cmp::PartialOrd>Poly<F> {
     }
     
 }
-impl <F:Field + std::fmt::Debug> Poly<F>{
+impl <F:Field> Poly<F>{
     pub fn div_rem(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
         let zero=g.coeffs[0].clone().zero();
         let mut rem=g.coeffs.clone();
+        if g.len()<h.len() {return [g.zero(),g.clone()].to_vec();}
         let new_len=g.len()-h.len()+1;
         let mut q: Vec<F>=vec![zero;new_len];
-        if g.len()<h.len() {return [g.zero(),g.clone()].to_vec();}
         let coeff=h.coeffs.last().unwrap().inverse();
         for i in (0..new_len).rev() {
             q[i]=coeff.clone()*rem[i+h.len()-1].clone();
@@ -226,7 +229,7 @@ impl <F:Field + std::fmt::Debug> Poly<F>{
 [Poly::new_from_coeffs(&q),Poly::new_from_coeffs(&rem)].to_vec()
 }
 }
-impl <F:Field + std::fmt::Debug> Poly<F>{
+impl <F:Field> Poly<F>{
 pub fn evaluation(&self,alpha:&F)->F {
     let mut value = self.coeffs[0].zero();
     for i in (0..self.len()).rev(){
@@ -249,7 +252,7 @@ pub fn gcdext(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
     let mut r0=g.clone(); let mut r1=h.clone();
     let mut s0=g.one(); let mut s1: Poly<F>=h.zero();
     let mut t0: Poly<F>=g.zero(); let mut t1=g.one();
-    let mut div_rem:Vec<Poly<F>>;
+    let mut _div_rem:Vec<Poly<F>>;
     while !r1.is_zero(){
         let div_rem=Poly::div_rem(&r0,&r1);
         r0=r1;
@@ -266,9 +269,8 @@ pub fn gcdext(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
     let u=Poly::new_from_coeffs(&s0.coeffs);
     let v=Poly::new_from_coeffs(&t0.coeffs);
     [u,v,d].to_vec()
-
-
-
-        
+}
+pub fn is_coprime(g:&Poly<F>,h:&Poly<F>)->bool{
+    Poly::gcdext(g, h)[2].is_one()
 }
 }

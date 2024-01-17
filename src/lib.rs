@@ -2,15 +2,12 @@
 //! Good references for this algorithm is [H.Cohen A course in computational number theory] 
 //! and [H. Cohen Handbook ok elliptic and hyperelliptic curves cryptography]
 //!
-use num_bigint::BigInt;
-
-use crate::poly::Poly;
 
 pub mod integers;
 pub mod intmod;
 pub mod poly;
 pub mod field;
-
+pub mod polymod;
 
 #[cfg(test)]
 mod tests {
@@ -57,6 +54,14 @@ fn test_gcdext_polynomial(){
     let expected_pol_v=Poly::new_from_coeffs(&[z13.new(BigInt::from(0)),z13.new(BigInt::from(12))]);
 let bez=Poly::gcdext(&p1,&p2);
 assert_eq!(bez,[expected_pol_u,expected_pol_v,expected_pol_d]);
+}
+#[test]
+fn test_coprime_polynomial(){
+    let z13=PrimeField(Some(BigInt::from(13)));
+    let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(9)), z13.new(BigInt::from(0)),z13.new(BigInt::from(1))]);
+    let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(0)), z13.new(BigInt::from(1))]);
+    let expected_pol_d=Poly::new_from_coeffs(&[z13.new(BigInt::from(9))]);
+assert_ne!(Poly::is_coprime(&p1,&p2),true);
 
 }
 }
