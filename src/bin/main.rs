@@ -1,7 +1,7 @@
 
 use std::vec;
 use algebra::poly;
-use algebra::polymod::Modulus;
+use algebra::polymod::{Modulus, PolyMod};
 use algebra::{integers::IntUtilities, poly::Poly};
 use num_bigint::{BigUint,BigInt,RandomBits, ToBigInt};
 use algebra::intmod::{Mod, PrimeField};
@@ -13,15 +13,26 @@ use std::io;
 
     fn main() {
 let z13=PrimeField(Some(BigInt::from(13)));
-let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(9)), z13.new(BigInt::from(0)),z13.new(BigInt::from(1))]);
-let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.new(BigInt::from(1))]);
-let p3 = Poly::new_from_coeffs(&[z13.new(BigInt::from(2)),z13.new(BigInt::from(1)), z13.new(BigInt::from(1))]);
-let modulus=Modulus(p1.clone());
-let polymod1=modulus.new(p2.clone());
-let polymod2=modulus.new(p3.clone());
+let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
+let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
+let p3 = poly!(z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
+let p4 = poly!(z13.new(BigInt::from(3)),z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
+
+let f=Modulus(p3);
+let g=Modulus(p4);
+println!("modulus is {}",f.0);
+let mut  pmod1=f.new(p1);
+let mut pmod2=g.new(p2);
+let chinese=PolyMod::chinese(&mut pmod1,&mut pmod2);
+println!("pmod1 {}",pmod1);
+println!("pmod2 {}",pmod2);
+println!("chinese {}",chinese);
+
+//println!("gcd is {}",Poly::gcdext(&p1, &p2)[0]);
+/* let polymod1=modulus.new(p1.clone());
+let polymod2=modulus.new(p2.clone());
 println!("a poly mod {} with coeffs {:?}",polymod1, polymod1.poly.coeffs);
-println!("a poly mod {} with coeffs {:?}",polymod2,polymod2.poly.coeffs);
-println!("sum mod is {}",polymod1.inverse());
+println!("a poly mod {} with coeffs {:?}",polymod2,polymod2.poly.coeffs); */
 
 
 

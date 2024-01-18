@@ -1,10 +1,8 @@
-use std::{ops::{Add, Div, Mul, Neg, Sub}, iter::Sum, fmt::Display};
-
-
-
+use std::{ops::{Add, Div, Mul, Neg, Sub},fmt::{Display, Debug}};
 pub trait Field
 where
     Self:Sized
+        +Debug
         +Clone
         +Display
         +PartialEq

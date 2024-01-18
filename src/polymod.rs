@@ -1,9 +1,7 @@
 use core::fmt;
 use std::ops::{Add, Sub,Neg,Mul};
 
-use num_traits::Zero;
-
-use crate::{poly::{self, Poly}, field::Field};
+use crate::{poly::Poly, field::Field};
 #[derive(Debug,PartialEq,Eq, PartialOrd, Ord,Clone)]
 pub struct Modulus<F>(pub Poly<F>);
 impl <F: Field>Modulus<F> {
@@ -33,15 +31,23 @@ impl<F:Field>PolyMod<F>{
     pub fn zero(&self)->Self{
         Self::new(Poly::zero(&self.poly),self.modulus.clone())
     }
+    pub fn is_zero(&self)->bool{
+        self.poly.is_zero()
+    }
+    pub fn is_one(&self)->bool{
+        self.poly.is_one()
+    }
     pub fn one(&self)->Self{
         Self::new(Poly::one(&self.poly), self.modulus.clone())
     }
     pub fn inverse(&self)->Self{
-        //TO BE FIXED!! gcd is Mod(n,m), so we need to check if is invertible!
         let bez=Poly::gcdext(&self.poly, &self.modulus.0);
         println!("bez[2] is {}",bez[2]);
-        if bez[2]>self.poly.one() {panic!("{} is not invertible mod {}",self.poly,self.modulus.0);}
-        PolyMod::new(bez[0].clone(),self.modulus.clone())
+        if !bez[2].is_constant() {panic!("{} is not invertible mod {}",self.poly,self.modulus.0);}
+        PolyMod::new(bez[0].clone().multiple(&bez[2].coeffs[0].inverse()),self.modulus.clone())
+    }
+    pub fn chinese(g:&Self,h:&Self)->Self {
+        todo!()
     }
 }
 impl<F:Field> fmt::Display for PolyMod<F> {
@@ -65,6 +71,19 @@ impl<F:Field> Add<PolyMod<F>> for PolyMod<F> {
                 else {panic!("cannot add different modulus")}
 }
 }
+impl<'a,'b,F:Field> Add<&'b PolyMod<F>> for PolyMod<F>{
+    type Output = Self;
+    fn add(self, rhs: &'b PolyMod<F>) -> Self::Output {
+        if self.modulus==rhs.modulus{
+                let modulus=&self.modulus.0;
+                let mut sum = &self.poly+&rhs.poly;
+                if sum>=*modulus{
+                    sum = &sum-&modulus;
+                    PolyMod::new(sum, self.modulus.clone())}
+                    else {PolyMod::new(sum, self.modulus)}}
+                else {panic!("cannot add different modulus")}
+}
+}
 impl <F:Field> Neg for PolyMod<F>{
     type Output = Self;
     fn neg(self) -> Self::Output {
@@ -74,7 +93,16 @@ impl <F:Field> Neg for PolyMod<F>{
 }
 impl<F:Field> Sub<PolyMod<F>> for PolyMod<F> {
     type Output = Self;    
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: PolyMod<F>) -> Self::Output {
+        if self.modulus==rhs.modulus{
+            PolyMod::new(&self.poly-&rhs.poly,self.modulus)
+        }
+            else {panic!("cannot add different modulus")}
+}
+}
+impl<'a,'b,F:Field> Sub<&'b PolyMod<F>> for PolyMod<F> {
+    type Output = Self;    
+    fn sub(self, rhs: &'b PolyMod<F>) -> Self::Output {
         if self.modulus==rhs.modulus{
             PolyMod::new(&self.poly-&rhs.poly,self.modulus)
         }
@@ -84,6 +112,17 @@ impl<F:Field> Sub<PolyMod<F>> for PolyMod<F> {
 impl<F:Field> Mul<PolyMod<F>> for PolyMod<F> {
     type Output = Self;    
     fn mul(self, rhs: Self) -> Self::Output {
+        if self.modulus==rhs.modulus{
+            let mut poly=&self.poly*&rhs.poly;
+            poly=&poly%&self.modulus.0;
+            PolyMod::new(poly,self.modulus)
+        }
+            else {panic!("cannot add different modulus")}
+}
+}
+impl<'a,'b,F:Field> Mul<&'b PolyMod<F>> for PolyMod<F> {
+    type Output = Self;    
+    fn mul(self, rhs: &'b Self) -> Self::Output {
         if self.modulus==rhs.modulus{
             let mut poly=&self.poly*&rhs.poly;
             poly=&poly%&self.modulus.0;

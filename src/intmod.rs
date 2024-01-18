@@ -1,6 +1,6 @@
 
 use core::fmt;
-use std::{ops::{Add, Mul, Neg, Sub, Div, SubAssign}, fmt::Debug, process::Output, clone};
+use std::{ops::{Add, Mul, Neg, Sub, Div}, fmt::Debug};
 use num_bigint::Sign::Minus;
 use num_bigint::RandBigInt;
 use num_bigint::BigInt;
@@ -172,6 +172,7 @@ impl Field for Mod {
         self.n.is_zero()
     }
     fn inverse(&self)->Self {
+            if self.n==BigInt::one(){return self.clone();}
             let a=self.n.clone();
             let b=self.modulus.0.clone().unwrap();
             let bezout=BigInt::gcdext(a, b);
@@ -196,8 +197,8 @@ impl Mod {
     
     
 /// This is Chinese Reminder Algorithm [10.52 H.Cohen Handbook of Elliptic and Hyperelliptic curves cryptography]
-/// Given a Vec of Mod with coprime modulus, this algorithm finds a class Mod(x,m) such that x=x_i mod m_i for each Mod(x_i,m_i)
-/// in the input vector.
+/// Given a Vec of Mod (x1, x2,...,xn) with coprime modulus, this algorithm computes z in the same 
+/// residue classes as x1, x2,...,xn.
 /// 
 /// # Example
 /// ```
