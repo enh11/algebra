@@ -1,11 +1,14 @@
 use std::ops::BitAnd;
-use num_bigint::BigInt;
+use num_bigint::{BigInt, RandBigInt};
 use num_bigint::Sign::{Minus,Plus};
 use num_traits::{Zero,One, Signed, ToPrimitive};
 impl IntUtilities for BigInt {}
 
 pub trait IntUtilities{
-
+    fn random_8bit()->BigInt{
+        let mut rng = rand::thread_rng();
+        rng.gen_bigint(8)
+    }
     fn to_binary(n:&BigInt)->Vec<u8>{
         format!("{:b}", n)
         .chars()
@@ -201,7 +204,7 @@ let v=BigInt::gcdext(a.clone(),b.clone());
 assert_eq!(a*&v[0]+b*&v[1],v[2])
 }
 const TAB2:[i8;8]=[0,1,0,-1,0,-1,0,1];
-fn kroneker<'a>(mut a:BigInt,mut b:BigInt)->i8 {
+fn kroneker(mut a:BigInt,mut b:BigInt)->i8 {
     let mut k:i8;
     if b.is_zero(){
         if !a.abs().is_one() {return 0i8;} else { return 1i8;}

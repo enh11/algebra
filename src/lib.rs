@@ -40,15 +40,15 @@ fn test_gcdext() {
 }
 #[test]
 fn test_chinese() {
-    let a=Mod::new(BigInt::from(8),PrimeField(Some(BigInt::from(11))));
-    let b=Mod::new(BigInt::from(4),PrimeField(Some(BigInt::from(13))));
-    let expected_mod=Some(Mod::new(BigInt::from(30),PrimeField(Some(BigInt::from(143)))));
+    let a=Mod::new(BigInt::from(8),PrimeField(BigInt::from(11)));
+    let b=Mod::new(BigInt::from(4),PrimeField(BigInt::from(13)));
+    let expected_mod=Some(Mod::new(BigInt::from(30),PrimeField(BigInt::from(143))));
     assert_eq!(expected_mod,Mod::chinese(&[a,b].to_vec()));
 
 }
 #[test]
 fn test_gcdext_polynomial(){
-    let z13=PrimeField(Some(BigInt::from(13)));
+    let z13=PrimeField(BigInt::from(13));
     let p1 = Poly::new_from_coeffs(&mut [z13.new(BigInt::from(1)), z13.new(BigInt::from(0)),z13.new(BigInt::from(9))]);
     let p2 = Poly::new_from_coeffs(&mut [z13.new(BigInt::from(1)), z13.new(BigInt::from(0))]);
     let expected_pol_d=Poly::new_from_coeffs(&mut [z13.new(BigInt::from(9))]);
@@ -60,7 +60,7 @@ assert_eq!(bez,[expected_pol_u,expected_pol_v,expected_pol_d]);
 #[test]
 fn text_poly_ops(){
 
-let z13=PrimeField(Some(BigInt::from(13)));
+let z13=PrimeField(BigInt::from(13));
 let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
 let add = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(7)),z13.new(BigInt::from(5)));
@@ -77,7 +77,7 @@ assert_eq!(rem,&p1%&p2);
 }
 #[test]
 fn test_coprime_polynomial(){
-    let z13=PrimeField(Some(BigInt::from(13)));
+    let z13=PrimeField(BigInt::from(13));
     let p1 = Poly::new_from_coeffs(&mut [z13.new(BigInt::from(1)), z13.new(BigInt::from(0)),z13.new(BigInt::from(9))]);
     let p2 = Poly::new_from_coeffs(&mut [z13.new(BigInt::from(1)), z13.new(BigInt::from(0))]);
 assert_ne!(Poly::is_coprime(&p1,&p2),true);

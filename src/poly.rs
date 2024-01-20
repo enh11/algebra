@@ -22,7 +22,7 @@ impl <F:Field>fmt::Display for Poly<F> {
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
-/// let z13=PrimeField(Some(prime_base));
+/// let z13=PrimeField(prime_base);
 /// let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 /// let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3))]);
 /// assert_eq!(p1, p2);
@@ -92,7 +92,7 @@ impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
-/// let z13=PrimeField(Some(BigInt::from(13)));
+/// let z13=PrimeField(BigInt::from(13));
 /// let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 /// let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
 /// println!("poly p1 is {}",p1);
@@ -236,7 +236,7 @@ impl <F:Field> Poly<F>{
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
-/// let z13=PrimeField(Some(BigInt::from(13)));
+/// let z13=PrimeField(BigInt::from(13));
 /// let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3))]);
 /// let alpha= z13.new(BigInt::from(3));
 /// let value = z13.new(BigInt::from(5));

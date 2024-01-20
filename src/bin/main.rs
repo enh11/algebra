@@ -11,13 +11,23 @@ use num_bigint::RandBigInt;
 use std::io;
 
 
-    fn main() {
-/* let z=BigInt::from(190);
-let x = BigInt::from(301);
-println!("kronecker is {} ",BigInt::kroneker(z, x)); */
+fn main() {
+
+let field=PrimeField(BigInt::from(13));
+let mut x=field.random();
+println!("x is {}",x);
+let exp = BigInt::random_8bit();
+println!("exp is {}",exp);
+println!("x^n mod 13 is {}",x.pow_mod(&exp));
+
+let z=BigInt::from(-133i16);
+let x = BigInt::from(-187i16);
+
+let k = BigInt::kroneker(z.clone(), x.clone());
+println!("kronecker of {} and {} is {} ",x,z,k); 
 for i in 15..=30 {println!("kronecker {i} is {}",BigInt::kroneker(BigInt::from(i), BigInt::from(30)))}
 
-let z13=PrimeField(Some(BigInt::from(13)));
+let z13=PrimeField(BigInt::from(13));
 let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
 let p3 = poly!(z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
