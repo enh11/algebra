@@ -12,6 +12,11 @@ use std::io;
 
 
     fn main() {
+/* let z=BigInt::from(190);
+let x = BigInt::from(301);
+println!("kronecker is {} ",BigInt::kroneker(z, x)); */
+for i in 15..=30 {println!("kronecker {i} is {}",BigInt::kroneker(BigInt::from(i), BigInt::from(30)))}
+
 let z13=PrimeField(Some(BigInt::from(13)));
 let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
@@ -23,10 +28,7 @@ let g=Modulus(p4);
 println!("modulus is {}",f.0);
 let mut  pmod1=f.new(p1);
 let mut pmod2=g.new(p2);
-let chinese=PolyMod::chinese(&mut pmod1,&mut pmod2);
-println!("pmod1 {}",pmod1);
-println!("pmod2 {}",pmod2);
-println!("chinese {}",chinese);
+
 
 //println!("gcd is {}",Poly::gcdext(&p1, &p2)[0]);
 /* let polymod1=modulus.new(p1.clone());

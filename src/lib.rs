@@ -28,7 +28,7 @@ fn test_gcd() {
 fn test_even_part() {
     let a=BigInt::from(24u8);
     let expected_value=(BigInt::from(8u8),3u64);
-    assert_eq!(BigInt::even_part(a),expected_value);
+    assert_eq!(BigInt::even_part(&a),expected_value);
 }
 #[test]
 fn test_gcdext() {

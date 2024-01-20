@@ -1,10 +1,11 @@
 use std::ops::BitAnd;
 use num_bigint::BigInt;
 use num_bigint::Sign::{Minus,Plus};
-use num_traits::{Zero,One};
+use num_traits::{Zero,One, Signed, ToPrimitive};
 impl IntUtilities for BigInt {}
 
 pub trait IntUtilities{
+
     fn to_binary(n:&BigInt)->Vec<u8>{
         format!("{:b}", n)
         .chars()
@@ -26,9 +27,9 @@ pub trait IntUtilities{
 /// use num_bigint::BigInt;
 /// let a=BigInt::from(24u8);
 /// let expected_value=(BigInt::from(8u8),3u64);
-/// assert_eq!(BigInt::even_part(a),expected_value);
+/// assert_eq!(BigInt::even_part(&a),expected_value);
 /// ```
-fn even_part(a:BigInt)->(BigInt,u64) {
+fn even_part(a:&BigInt)->(BigInt,u64) {
     let exp=a.trailing_zeros().unwrap();
     let v=(BigInt::one()<<exp).to_bytes_be();
     let pow=BigInt::from_signed_bytes_be(&v.1);
@@ -198,5 +199,50 @@ fn gcdext(mut a:BigInt,mut b:BigInt)->[BigInt;3]{
 fn check_gcdext( a:BigInt,b:BigInt){
 let v=BigInt::gcdext(a.clone(),b.clone());
 assert_eq!(a*&v[0]+b*&v[1],v[2])
+}
+const TAB2:[i8;8]=[0,1,0,-1,0,-1,0,1];
+fn kroneker<'a>(mut a:BigInt,mut b:BigInt)->i8 {
+    let mut k:i8;
+    if b.is_zero(){
+        if !a.abs().is_one() {return 0i8;} else { return 1i8;}
+    }
+    if BigInt::is_even(&a) && BigInt::is_even(&b) {return 0i8;}
+    let mut v= 0;
+    let mut even_part:(BigInt,u64);
+    if BigInt::is_even(&b){
+        even_part=BigInt::even_part(&b);
+
+        b=b>>even_part.1;
+        v=even_part.1;
+        }
+    if v%2==0 {k = 1;} else {
+        k = Self::TAB2[(&a&BigInt::from(7)).to_usize().unwrap()];
+        }
+    if b.sign()==Minus {
+        b=-b;
+        if a.sign()==Minus {k=-k;}
+    }
+    loop{
+    if a==BigInt::zero(){ 
+        if b>BigInt::one() {break 0;} 
+        else {break k;}}
+        v=0;
+        if BigInt::is_even(&a){
+    even_part=BigInt::even_part(&a);
+    a=a>>even_part.1;
+    v=even_part.1;
+    }
+    if v%2==1 {
+        k = Self::TAB2[(&b&BigInt::from(7)).to_usize().unwrap()]*k;
+
+    }
+    if (&a&(&b)&BigInt::from(2))!=BigInt::zero() {
+        k=-k;
+        }
+        let r = a.abs();
+        a=b%&r;
+        b=r;
+
+    }
 }
 }
