@@ -1,12 +1,15 @@
 
-use core::fmt;
-use std::{ops::{Add, Mul, Neg, Sub, Div}, fmt::Debug};
+use std::{ops::{Add, Mul, Neg, Sub, Div}, fmt::{Debug,self}};
 use num_bigint::Sign::Minus;
 use num_bigint::RandBigInt;
 use num_bigint::BigInt;
 use num_traits::{Zero,One};
 use crate::{integers::IntUtilities, field::Field};
-
+#[derive(Debug,PartialEq)]
+pub enum MathError {
+    QuadraticNonResidueModP
+}
+pub type ModResult=Result<Mod,MathError>;
 #[derive(Debug, Clone,Eq,PartialEq,PartialOrd, Ord)]
 pub struct PrimeField(pub BigInt);
 impl PrimeField {
@@ -37,6 +40,7 @@ impl fmt::Display for Mod {
         write!(f, "Mod({},{})", self.n,self.modulus.0.clone())
     }
 }
+
 /// # Example
 /// ```
 /// use algebra::intmod::PrimeField;
@@ -104,10 +108,18 @@ impl<'a,'b> Mul<&'b Mod> for &'b Mod {
                 else {panic!("You can not multiply two different mod!")}
         }
     }
+impl<'a> Mul<&'a Mod> for Mod {
+    type Output = Mod;
+    fn mul(self, rhs: &'a Mod) -> Self::Output {
+            if rhs.modulus==self.modulus {
+                Mod::new(&self.n*&rhs.n,self.modulus.clone())}
+                else {panic!("You can not multiply two different mod!")}
+        }
+    }
 
-    impl<'a> Mul<&'a Mod> for Mod {
+    impl<'a> Mul<Mod> for &'a mut Mod {
         type Output = Mod;
-        fn mul(self, rhs: &'a Mod) -> Self::Output {
+        fn mul(self, rhs: Mod) -> Self::Output {
             if rhs.modulus==self.modulus {
                 Mod::new(&self.n*&rhs.n,self.modulus.clone())}
                 else {panic!("You can not multiply two different mod!")}
@@ -117,10 +129,7 @@ impl<'a,'b> Mul<&'b Mod> for &'b Mod {
 impl Neg for Mod{
         type Output = Mod;
         fn neg(self) -> Self::Output {
-            match self.modulus.0.clone() {
-                prime=>Mod::new(prime-&self.n,self.modulus.clone()),
-                _=>panic!("There's no inverse!")
-            }
+            Mod::new(&self.modulus.0-&self.n,self.modulus.clone())
         }
     }
 impl Sub<Mod> for Mod {
@@ -170,6 +179,9 @@ impl Field for Mod {
     }  
     fn is_zero(&self)->bool{
         self.n.is_zero()
+    }
+    fn is_one(&self)->bool{
+        self.n.is_one()
     }
     fn inverse(&self)->Self {
             if self.n==BigInt::one(){return self.clone();}
@@ -232,6 +244,19 @@ impl Mod {
         let sqr=self.n.modpow(&BigInt::from(2),&self.modulus.0);
         Mod::new(sqr,self.modulus.clone())
     }
+/// # Example
+/// ```
+/// use crate::algebra::integers::IntUtilities;
+/// use crate::algebra::intmod::Mod;
+/// use algebra::intmod::PrimeField;
+/// use num_bigint::BigInt;
+/// let field=PrimeField(BigInt::from(13i16));
+/// let mut x=field.new(BigInt::from(7i16));
+/// let exp = BigInt::from(-55i16);
+/// let expected_power=field.new(BigInt::from(11));
+/// assert_eq!(expected_power,x.pow_mod(&exp));
+/// 
+/// ```
     pub fn pow_mod(&mut self,exp:&BigInt)->Mod {
        /*Montgomery ladder */
        if exp.sign()==Minus {
@@ -246,30 +271,68 @@ impl Mod {
                p0=p0.square();
            }
            else {
-               p0=(p0*&p1);
+               p0=p0*&p1;
                p1=p1.square();
                }
        }
        p0.clone()
     }
-    /* pub fn sqrt_mod_prime(&self)->Option<Self> {
+    pub fn check_sqrt_mod_prime(&mut self)->ModResult {
+        if self.is_zero(){return Ok(self.zero());}
         let m=self.modulus.0.clone();
-        let d=BigInt::even_part(&(&m-BigInt::one()));
-        let q=(&m-BigInt::one())/d.0;
-        let n=loop { 
+        let even_part=BigInt::even_part(&(&m-BigInt::one()));
+        let q=(&m-BigInt::one())/even_part.0;
+        let mut n=loop { 
             let rand = BigInt::random_8bit();
-            if BigInt::kroneker(rand.clone(), m.clone())==-1i8 {break rand;}
+            if BigInt::kroneker(rand.clone(), m.clone())==-1i8 {break Mod::new(rand,PrimeField(m.clone()));}
         };
-        let z=BigInt::modpow(&n, &q, &m);
-        let mut y = &z;
-        let r=d.1;
-        let mut x= self.n.modpow(&((&m-BigInt::one())/BigInt::from(2)), &m);
-        let b=(&self.n*&x*&x)%&m;
-        x=x*&self.n;
-        if 
+        let z=n.pow_mod(&q);
+        let mut y = z;
+        let mut r=even_part.1;
+        let mut x= self.pow_mod(&((&q-BigInt::one())/BigInt::from(2)));
+        
+        let mut b=self.clone()*x.square();
+        x=&x*&self;
+        
+        while !b.is_one(){
+            let mut shift=1u64;
+            let mut pow_two= BigInt::from(2);
+        
+            while  !b.pow_mod(&pow_two).is_one(){
+                pow_two<<=1;
+                shift+=1;   
+            }
 
-        let sqrt=Mod::new(n,PrimeField(m));
-        Some(sqrt)
+        
+        if shift==r {return Err(MathError::QuadraticNonResidueModP);}
+        
+        let exp=r-shift-1;
+        pow_two=BigInt::one()<<exp;
+        let mut t=y.pow_mod(&pow_two);
+        y=t.square();
+        r=shift;
+        x=&x*&t;
+        b=&b*&y;
     }
- */
+    let neg_x=x.clone().neg();
+    if x<neg_x {Ok(x)} else {Ok(-x)}
+    }
+/// # Example
+/// ```
+/// use crate::algebra::integers::IntUtilities;
+/// use crate::algebra::intmod::Mod;
+/// use algebra::intmod::PrimeField;
+/// use num_bigint::BigInt;
+/// let z17=PrimeField(BigInt::from(17));
+/// let mut n=z17.new(BigInt::from(15));
+/// let expected_sqrt=z17.new(BigInt::from(7));
+/// assert_eq!(expected_sqrt,n.sqrt_mod_prime());
+/// 
+/// ```   
+pub fn sqrt_mod_prime(&mut self)-> Mod{
+    match self.check_sqrt_mod_prime(){
+        Ok(sqrt)=> sqrt,
+        Err(error)=>panic!("{:?}",error)
+    }
+}
 }

@@ -34,8 +34,8 @@ pub trait IntUtilities{
 /// ```
 fn even_part(a:&BigInt)->(BigInt,u64) {
     let exp=a.trailing_zeros().unwrap();
-    let v=(BigInt::one()<<exp).to_bytes_be();
-    let pow=BigInt::from_signed_bytes_be(&v.1);
+    let pow=BigInt::one()<<exp;
+    //let pow=BigInt::from_signed_bytes_be(&v.1);
     (pow,exp)
 }
 fn compute_power_of_two(mut a:BigInt,mut b:BigInt)->(BigInt,BigInt,u64){
