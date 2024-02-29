@@ -8,6 +8,7 @@ pub mod intmod;
 pub mod poly;
 pub mod field;
 pub mod polymod;
+pub mod multivariatepoly;
 
 #[cfg(test)]
 mod tests {

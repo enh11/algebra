@@ -1,5 +1,6 @@
 
 use std::vec;
+use algebra::multivariatepoly::{Monomial, MultivariatePoly};
 use algebra::poly;
 use algebra::polymod::{Modulus, PolyMod};
 use algebra::{integers::IntUtilities, poly::Poly};
@@ -14,6 +15,14 @@ use std::io;
 fn main() {
 
 let z13=PrimeField(BigInt::from(13));
+let mono = Monomial::new_from_multi_index(vec![2,0,0,1,4,0]);
+println!("monomial is {}",mono);
+let mono2=Monomial::new_from_multi_index(vec![4,5,5,6,1]);
+println!("monomial 2 is {}",mono2);
+
+let multivariate=MultivariatePoly::new(vec![(z13.one(),mono),(z13.new(BigInt::from(4)),mono2)]);
+println!("multivariate is {}",multivariate);
+
 let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
 let p3 = poly!(z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
