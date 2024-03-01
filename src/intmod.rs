@@ -92,6 +92,20 @@ impl<'a, 'b> Add<&'b Mod> for &'b Mod {
                 
             }
     }
+    impl<'a> Add<&'a Mod> for Mod {
+        type Output = Mod;
+        fn add(self, rhs: &'a Mod) -> Self::Output {
+            if self.modulus==rhs.modulus{
+                let modulus=self.modulus.0.clone();
+                let mut sum = &self.n+&rhs.n;
+                if sum>=modulus{
+                    sum = sum-&modulus;
+                    Mod::new(sum, PrimeField(modulus))}
+                    else {Mod::new(sum, PrimeField(modulus))}}
+                else {panic!("cannot add different modulus")}
+                
+            }
+    }
 impl Mul<Mod> for Mod {
         type Output = Self;
         fn mul(self, rhs: Self) -> Self::Output {
@@ -108,6 +122,21 @@ impl<'a,'b> Mul<&'b Mod> for &'b Mod {
                 else {panic!("You can not multiply two different mod!")}
         }
     }
+impl <'a> Add<&'a mut Mod> for Mod {
+    type Output=Mod;
+    fn add(self, rhs: &'a mut Mod) -> Self::Output {
+        if self.modulus==rhs.modulus{
+            let modulus=self.modulus.0.clone();
+            let mut sum = &self.n+&rhs.n;
+            if sum>=modulus{
+                sum = sum-&modulus;
+                Mod::new(sum, PrimeField(modulus))}
+                else {Mod::new(sum, PrimeField(modulus))}}
+            else {panic!("cannot add different modulus")}
+            
+        }
+    
+}
 impl<'a> Mul<&'a Mod> for Mod {
     type Output = Mod;
     fn mul(self, rhs: &'a Mod) -> Self::Output {

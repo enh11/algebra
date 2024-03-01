@@ -9,6 +9,10 @@ where
         +PartialOrd
         +Eq
         + Add<Self, Output = Self>
+        +for<'a> Add<&'a Self,Output = Self>
+        +for<'a> Add<&'a mut Self, Output = Self>
+        +for<'a> Add<Self,Output = Self>
+        +for<'a> Add<&'a Self>
         + Mul<Self, Output = Self>
         +for<'a> Mul<&'a Self,Output = Self>
         +for<'a> Mul<Self,Output = Self>

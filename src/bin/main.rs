@@ -15,14 +15,21 @@ use std::io;
 fn main() {
 
 let z13=PrimeField(BigInt::from(13));
-let mono = Monomial::new_from_multi_index(vec![2,0,0,1,4,0]);
+let mono = Monomial::new_from_multi_index(vec![0,3,0,1,4,0]);
 println!("monomial is {}",mono);
-let mono2=Monomial::new_from_multi_index(vec![4,5,5,6,1]);
-println!("monomial 2 is {}",mono2);
+let mono2=Monomial::new_from_multi_index(vec![2,5,5,6,1]);
+let mono3=Monomial::new_from_multi_index(vec![6,1]);
+let mono4=Monomial::new_from_multi_index(vec![6,1,2]);
 
-let multivariate=MultivariatePoly::new(vec![(z13.one(),mono),(z13.new(BigInt::from(4)),mono2)]);
-println!("multivariate is {}",multivariate);
-
+let multivariate1=MultivariatePoly::new(vec![(z13.one(),mono),(z13.new(BigInt::from(4)),mono2),(z13.new(BigInt::from(4)),mono3),(z13.random(),mono4)]);
+println!("multivariate is {}",multivariate1);
+let mono1 = Monomial::new_from_multi_index(vec![2,3,0,1,4,0]);
+let mono2=Monomial::new_from_multi_index(vec![2,5,5,6,1]);
+let mono3=Monomial::new_from_multi_index(vec![6,1]);
+let multivariate2=MultivariatePoly::new(vec![(z13.one(),mono1),(z13.new(BigInt::from(3)),mono2),(z13.new(BigInt::from(7)),mono3)]);
+println!("multivariate is {}",multivariate2);
+let sum_multivariate=multivariate1+multivariate2;
+println!("sum is {}",sum_multivariate);
 let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
 let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
 let p3 = poly!(z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
