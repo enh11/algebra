@@ -6,6 +6,7 @@ where
         +Clone
         +Display
         +PartialEq
+        +Ord
         +PartialOrd
         +Eq
         + Add<Self, Output = Self>
