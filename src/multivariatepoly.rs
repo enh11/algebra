@@ -1,7 +1,5 @@
 use core::fmt;
-use std::{collections::BinaryHeap, fmt::Display, ops::{Add, Div, Mul, Neg, Rem, Sub}};
-
-
+use std::{collections::BinaryHeap, fmt::Display, ops::{Add, DerefMut, Div, Mul, Neg, Rem, Sub}};
 use num_traits::{One, Zero};
 
 use crate::field::Field;
@@ -9,22 +7,53 @@ use crate::field::Field;
 pub struct Monomial(Vec< usize>);
 impl<'a, 'b> Mul<&'b mut Monomial> for &'a mut Monomial {
     type Output = Monomial;
+/// # Example
+/// ```
+/// 
+/// use algebra::intmod::PrimeField;
+/// use algebra::field::Field;
+/// use num_bigint::BigInt;
+/// use algebra::multivariatepoly::Monomial;
+/// let z13=PrimeField(BigInt::from(13));
+/// let mut mono1 = Monomial::new_from_multi_index(vec![2,0]);
+/// let mut mono2=Monomial::new_from_multi_index(vec![1,0,1]);
+/// let mul = &mut mono1*&mut mono2;
+/// let expected_mul = Monomial::new_from_multi_index(vec![3,0,1]);
+/// assert_eq!(mul,expected_mul);
+///  
+/// ```
     fn mul(self:&'a mut Monomial, rhs: &'b mut Monomial) -> Self::Output {
-        while self.0.len()<rhs.0.len() {
-            self.0.append(&mut vec![0usize]);
-        }
-        while self.0.len()>rhs.0.len() {
-            rhs.0.append(&mut vec![0usize]);
-        }
+        let (self_resize,rhs_resize)=self.resize(rhs);
+
         let mut sum=Vec::new();
-        for (a, b) in self.0.iter().zip(rhs.0.iter()) {
+        for (a, b) in self_resize.iter().zip(rhs_resize.iter()) {
             sum.push(a + b);
         }
         Monomial::new_from_multi_index(sum)
     }
-    
-    
 }
+
+impl<'a, 'b> Div<&'b mut Monomial> for &'a mut Monomial {
+    type Output = Monomial;
+/// # Example
+/// ```
+/// use algebra::multivariatepoly::Monomial;
+/// 
+///     let mut mono1 = Monomial::new_from_multi_index(vec![2, 0,3,1]);
+///     let mut mono2 = Monomial::new_from_multi_index(vec![1, 0, 1]);
+///     let division= &mut mono1 / &mut mono2;
+///     let expected_division=Monomial::new_from_multi_index(vec![1,0,2,1]);
+/// assert_eq!(division,expected_division);
+/// 
+/// ```
+    fn div(self:&'a mut Monomial, rhs: &'b mut Monomial) -> Self::Output {    
+        if !self.is_divisible(rhs) {panic!("Cannot divide!")}
+        let (self_resize,rhs_resize)=self.resize(rhs);
+        let diff: Vec<usize>=self_resize.iter().zip(rhs_resize.iter()).map(|x|x.0-x.1).collect();
+        Monomial::new_from_multi_index(diff)
+        }
+}
+
 impl Monomial{
     pub fn new_from_multi_index(multi_index:Vec<usize>)->Self {
         if multi_index.len()==1 {Monomial(multi_index)}
@@ -34,7 +63,23 @@ impl Monomial{
         Monomial(new_multi_index)}
         
     }
-    pub fn is_zero(&self)->bool{
+    pub fn is_divisible(&mut self,rhs:&mut Self)->bool{
+        let (self_resize,rhs_resize)=self.resize(rhs);    
+        let matching = self_resize.iter().zip(&rhs_resize).filter(|&(a, b)| a >= b).count();
+        matching==self_resize.len()
+    }
+    pub fn resize(&mut self,rhs: &mut Self)->(Vec<usize>,Vec<usize>){
+        while self.0.len()<rhs.0.len() {
+            self.0.append(&mut vec![0usize]);
+
+        }
+        while self.0.len()>rhs.0.len() {
+            rhs.0.append(&mut vec![0usize]);
+        }
+        (self.0.clone(),rhs.0.clone())
+        
+    }
+    pub fn is_one(&self)->bool{
         self.0.is_empty()
     }
     pub fn is_constant(&self)->bool{
@@ -59,14 +104,9 @@ impl Monomial{
             else {
                 str =format!("x_{}^{}",i,self.0[i]);
             }
-            /* if i!=self.0.len()-1{
-                str = format!("{}*",str);
-            } */
-        
-            s.push(str);
+        s.push(str);
         }
        s.join("*")
-       /* s.concat() */
     }
     
 }
@@ -214,7 +254,7 @@ impl <'a,'b, F:Field> Mul for MultivariatePoly<F> {
         let mut k=0usize;
         let mut s = 0usize;
         let mut gamma=&mut self.0[0].1*&mut rhs.0[0].1;
-        let mut index: Vec<usize> = vec![];
+        let mut index: Vec<usize>;
         index = (0..self.number_of_terms()).into_iter().map(|_| 0usize).collect();
         //initialize heap(a,B1)
         let mut heap: BinaryHeap<MultivariatePoly<F>> = BinaryHeap::new();
@@ -223,56 +263,30 @@ impl <'a,'b, F:Field> Mul for MultivariatePoly<F> {
             let monomial=& mut self.0[i].1*& mut rhs.0[0].1;
             heap.push(MultivariatePoly::new(vec![(coeff,monomial)]));
         }
-        println!("heap initialization is {:?}",heap);
-
         while !heap.is_empty() { 
-            println!("entered in the while, so heap is not empty. It is {:?}",heap);
             if gamma !=c[k].0[0].1 && !c[k].0[0].0.is_zero() { 
                 c.push(self.zero());
                 k+=1;
             }
             c[k]=c[k].clone()+heap.pop().unwrap();
-            println!("c[{k}] is {:?}",c[k].0);
-            println!("removed an element from the heap. Now heap is {:?}",heap);
-            println!("s is {:?}",s);
-            println!("index[s] is {:?}",index[s]);
             index[s]+=1;
 
             if index[s]<rhs.number_of_terms() {
                 //insert A_s*B_fs into the heap
-                println!("Entered in the if. s is {}, index[{s}] is {}",s, index[s]);
-                println!("A_s is {:?}, B_fs is {:?}",self.0[s],rhs.0[index[s]]);
                 let coeff = self.0[s].0.clone()*rhs.0[index[s]].0.clone();
                 let monomial=&mut self.0[s].1*& mut rhs.0[index[s]].1;
                 heap.push(MultivariatePoly::new(vec![(coeff,monomial)]));
-                println!("heap.push terms A_s*B_fs. New heap is {:?}",heap);
 
             }
             let x= heap.peek();
             if x.is_none() {continue;} 
-            println!("x is {:?}",x);
-
-            let aux_heap =heap.clone().into_sorted_vec();
-            
-            s= aux_heap.binary_search(&x.unwrap()).unwrap();        
-            println!("aux_heap is {:?}",aux_heap);
-        
-            println!("s is {}",s);
+            s=heap.clone().into_sorted_vec().binary_search(&x.unwrap()).unwrap();        
             gamma=x.unwrap().0[0].1.clone();
-            println!("gamma is {}",gamma);
-
         }
-        /* if c[k]==self.zero() {
-            k=k-1;        }
-        println!("k is {}",k); */
-        println!("c is {:?}",c);
         let mut out : MultivariatePoly<F>=self.zero();
         for i in c {
-            println!("c[i] {:?}",i);
-
-            out = out+i.clone()
+            out = out+i
         }
-        println!("out {:?}",out.0);
         out
         }
     

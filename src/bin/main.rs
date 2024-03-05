@@ -17,12 +17,12 @@ use std::collections::BinaryHeap;
 
 fn main() {
 let z13=PrimeField(BigInt::from(13));
-let mono = Monomial::new_from_multi_index(vec![2,0,1]);
-let mono2=Monomial::new_from_multi_index(vec![1,1]);
-let mono3=Monomial::new_from_multi_index(vec![0,0,0]);
-let mono4=Monomial::new_from_multi_index(vec![1,1,2]);
-
-let multivariate1=MultivariatePoly::new(vec![(z13.one(),mono.clone()),(z13.one(),mono3.clone())]);
+let mut mono1 = Monomial::new_from_multi_index(vec![2,0]);
+let mut mono2=Monomial::new_from_multi_index(vec![1,0,1]);
+let mono3=Monomial::new_from_multi_index(vec![1,0,1]);
+let mut mono4=Monomial::new_from_multi_index(vec![1,5,2]);
+println!("{} divided by {} is {}",mono1.clone(),mono2.clone(),&mut mono1/&mut mono2);
+let multivariate1=MultivariatePoly::new(vec![(z13.one(),mono1.clone()),(z13.one(),mono3.clone())]);
 let multivariate2=MultivariatePoly::new(vec![(z13.new(BigInt::from(3)),mono3.clone())]);
 
 println!("({})*({}) = {}",multivariate1.clone(),multivariate2.clone(),multivariate1*multivariate2);
