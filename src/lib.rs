@@ -15,7 +15,7 @@ mod tests {
  
     use num_bigint::BigInt;
     use crate::intmod::PrimeField;
-    use crate::multivariatepoly::Monomial;
+    use crate::multivariatepoly::{MultiIndex, Terms};
     use crate::{integers::IntUtilities, intmod::Mod};
     use crate::poly::Poly;
     use crate::poly;
@@ -99,9 +99,9 @@ assert_eq!(Err(QuadraticNonResidueModP),m.check_sqrt_mod_prime());
 #[test]
 #[should_panic(expected = "Cannot divide!")]
 fn monomial_division_should_panic(){
-
-let mut mono1 = Monomial::new_from_multi_index(vec![2,0]);
-let mut mono2=Monomial::new_from_multi_index(vec![1,0,1]);
+let z13=PrimeField(BigInt::from(13));
+let mut mono1 = Terms::new(z13.new(BigInt::from(3)),MultiIndex::new(&vec![2,0]));
+let mut mono2=Terms::new(z13.new(BigInt::from(4)),MultiIndex::new(&vec![1,0,1]));
 let _ = &mut mono1/&mut mono2;
 
 }

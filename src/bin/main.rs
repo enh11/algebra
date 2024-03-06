@@ -2,7 +2,7 @@
 use std::ops::Neg;
 use std::vec;
 use algebra::field::Field;
-use algebra::multivariatepoly::{Monomial, MultiIndex, MultivariatePoly, Terms};
+use algebra::multivariatepoly::{MultiIndex, MultivariatePoly, Terms};
 use algebra::poly;
 use algebra::polymod::{Modulus, PolyMod};
 use algebra::{integers::IntUtilities, poly::Poly};
@@ -16,29 +16,26 @@ use std::collections::BinaryHeap;
 
 
 fn main() {
+    let mut index0=MultiIndex::new(&vec![1,1]);
     let mut index1=MultiIndex::new(&vec![1,0]);
     let mut index2=MultiIndex::new(&vec![1,1,4]);
-    println!("index2.weight is {}",index2.weight());
-    let mut index0=MultiIndex::new(&vec![3,1,2]);
+    let mut index3=MultiIndex::new(&vec![1,1]);
+    let mut index4=MultiIndex::new(&vec![3,0,2]);
 let z13=PrimeField(BigInt::from(13));
-let mut term0=Terms::new(z13.random(), index0);
+let mut term0=Terms::new(z13.one(), index0.clone());
 println!("term0 is {}. is zero is {}",term0,term0.is_zero());
-let mut term1=Terms::new(z13.random(), index1);
+let mut term1=Terms::new(z13.one(), index1.clone());
 println!("term1 is {}. is zero is {}",term1,term1.is_zero());
-println!("mul is {}",&mut term0/&mut term1);
+let mut term2=Terms::new(z13.one(), index0);
+println!("term2 is {}. is zero is {}",term2,term2.is_zero());
+let mut term3=Terms::new(z13.new(BigInt::from(12)), index1);
+println!("term3 is {}. is zero is {}",term3,term3.is_zero());
+let mut term4=Terms::new(z13.random(), index4);
+println!("term4 is {}. is zero is {}",term4,term4.is_zero());
 
-
-let mut mono1 = Monomial::new_from_multi_index(vec![2,1,4]);
-let mut mono2=Monomial::new_from_multi_index(vec![1,0,1]);
-let mono3=Monomial::new_from_multi_index(vec![1,0,1]);
-let mut mono4=Monomial::new_from_multi_index(vec![1,5,2]);
-println!("{} divided by {} is {}",mono1.clone(),mono2.clone(),&mut mono1/&mut mono2);
-let multivariate1=MultivariatePoly::new(vec![(z13.one(),mono1.clone()),(z13.one(),mono3.clone())]);
-let multivariate2=MultivariatePoly::new(vec![(z13.new(BigInt::from(3)),mono3.clone())]);
-
-println!("({})*({}) = {}",multivariate1.clone(),multivariate2.clone(),multivariate1*multivariate2);
-
-
+let multivariate1=MultivariatePoly::new(vec![term0.clone(),term1.clone()]);
+let multivariate2=MultivariatePoly::new(vec![term0.clone(),term1.clone()]);
+println!("[{}]*[{}]={}",multivariate1.clone(),multivariate2.clone(),multivariate1*multivariate2);
 //println!("gcd is {}",Poly::gcdext(&p1, &p2)[0]);
 /* let polymod1=modulus.new(p1.clone());
 let polymod2=modulus.new(p2.clone());
