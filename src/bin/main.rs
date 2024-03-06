@@ -2,7 +2,7 @@
 use std::ops::Neg;
 use std::vec;
 use algebra::field::Field;
-use algebra::multivariatepoly::{Monomial, MultivariatePoly};
+use algebra::multivariatepoly::{Monomial, MultiIndex, MultivariatePoly, Terms};
 use algebra::poly;
 use algebra::polymod::{Modulus, PolyMod};
 use algebra::{integers::IntUtilities, poly::Poly};
@@ -16,8 +16,19 @@ use std::collections::BinaryHeap;
 
 
 fn main() {
+    let mut index1=MultiIndex::new(&vec![1,0]);
+    let mut index2=MultiIndex::new(&vec![1,1,4]);
+    println!("index2.weight is {}",index2.weight());
+    let mut index0=MultiIndex::new(&vec![3,1,2]);
 let z13=PrimeField(BigInt::from(13));
-let mut mono1 = Monomial::new_from_multi_index(vec![2,0]);
+let mut term0=Terms::new(z13.random(), index0);
+println!("term0 is {}. is zero is {}",term0,term0.is_zero());
+let mut term1=Terms::new(z13.random(), index1);
+println!("term1 is {}. is zero is {}",term1,term1.is_zero());
+println!("mul is {}",&mut term0/&mut term1);
+
+
+let mut mono1 = Monomial::new_from_multi_index(vec![2,1,4]);
 let mut mono2=Monomial::new_from_multi_index(vec![1,0,1]);
 let mono3=Monomial::new_from_multi_index(vec![1,0,1]);
 let mut mono4=Monomial::new_from_multi_index(vec![1,5,2]);
@@ -26,30 +37,6 @@ let multivariate1=MultivariatePoly::new(vec![(z13.one(),mono1.clone()),(z13.one(
 let multivariate2=MultivariatePoly::new(vec![(z13.new(BigInt::from(3)),mono3.clone())]);
 
 println!("({})*({}) = {}",multivariate1.clone(),multivariate2.clone(),multivariate1*multivariate2);
-/* 
-let mut mono1 = Monomial::new_from_multi_index(vec![2,0,1]);
-let mut mono2=Monomial::new_from_multi_index(vec![3,1]);
-let mul = &mut mono1*&mut mono2;
-println!("mono1*mono2 is {}",mul);
-let mono3=Monomial::new_from_multi_index(vec![6,1]);
-let multivariate2=MultivariatePoly::new(vec![(z13.one(),mono1),(z13.new(BigInt::from(3)),mono2),(z13.new(BigInt::from(7)),mono3)]);
-println!("multivariate is {}",multivariate2);
-let sum_multivariate=multivariate1+multivariate2;
-println!("sum is {}",sum_multivariate);
-
- */
-
-
-let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
-let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
-let p3 = poly!(z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
-let p4 = poly!(z13.new(BigInt::from(3)),z13.new(BigInt::from(4)),z13.new(BigInt::from(0)),z13.new(BigInt::from(3)),z13.new(BigInt::from(1)));
-
-let f=Modulus(p3);
-let g=Modulus(p4);
-println!("modulus is {}",f.0);
-let mut  pmod1=f.new(p1);
-let mut pmod2=g.new(p2);
 
 
 //println!("gcd is {}",Poly::gcdext(&p1, &p2)[0]);
