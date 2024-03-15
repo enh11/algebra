@@ -1,8 +1,9 @@
 
 use std::ops::Neg;
 use std::vec;
-use algebra::field::Field;
-use algebra::multivariatepoly::{MultiIndex, MultivariatePoly, Terms};
+use algebra::multivariate::multiindex::MultiIndex;
+use algebra::multivariate::terms::Terms;
+use algebra::multivariate::multivariatepoly::{MultivariatePoly};
 use algebra::poly;
 use algebra::polymod::{Modulus, PolyMod};
 use algebra::{integers::IntUtilities, poly::Poly};
@@ -16,36 +17,38 @@ use std::collections::BinaryHeap;
 
 
 fn main() {
-    let mut index0=MultiIndex::new(&vec![1,1]);
-    let mut index1=MultiIndex::new(&vec![1,0]);
-    let mut index2=MultiIndex::new(&vec![2,2]);
-    let mut index3=MultiIndex::new(&vec![2,0]);
-    println!("is divisible index3 by index1 {}",&mut index1.is_subtractable_by(&mut index3));
-    let mut index4=MultiIndex::new(&vec![3,0,2]);
+    let mut index0=MultiIndex::new(&vec![2,1]);
+    let mut index1=MultiIndex::new(&vec![1,2]);
+    let mut index2=MultiIndex::new(&vec![1,1]);
+    let mut index4=MultiIndex::new(&vec![0,2]);
+
+    let mut index3=MultiIndex::new(&vec![0]);
+    println!("ordering {:?}<{:?}: {:?}", index3.clone(),index2.clone(),index3.cmp(&index2));
 let z13=PrimeField(BigInt::from(13));
 let term0=Terms::new(z13.one(), index0.clone());
-let term12=Terms::new(z13.one(), index1.clone());
-let term21=Terms::new(z13.one().neg(), index1.clone());
-let  m1= MultivariatePoly::new(vec![term0.clone(),term12.clone()]);
-let  m2= MultivariatePoly::new(vec![term0.clone(),term21.clone()]);
+let term1=Terms::new(z13.one(), index1.clone());
+let term2=Terms::new(z13.one(), index4.clone());
+let term4=Terms::new(z13.one(), index2.clone()); //x_0x_1
 
-let try_prod = m1*m2;
-println!("try_sum {}",try_prod);
-println!("term0 is {}. is zero is {}",term0,term0.is_zero());
-let term1=Terms::new(z13.one().neg(), index1.clone());
-println!("term1 is {}. is zero is {}",term1,term1.is_zero());
-let term2=Terms::new(z13.one(), index2);
-println!("term2 is {}. is zero is {}",term2,term2.is_zero());
-let term3=Terms::new(z13.new(BigInt::from(12)), index3);
-println!("term3 is {}. is zero is {}",term3,term3.is_zero());
-let term4=Terms::new(z13.random(), index4);
-println!("term4 is {}. is zero is {}",term4,term4.is_zero());
+let term3=Terms::new(z13.one(), index3);//-1
 
-let mut multivariate1=MultivariatePoly::new(vec![term3.clone(),term2.clone()]);
-let mut multivariate2=MultivariatePoly::new(vec![term0.clone(),term1.clone()]);
-println!("mult1 ={},multi2 = {}",multivariate1.clone(),multivariate2.clone());
-println!("[{}]/[{}]={}",multivariate1.clone(),multivariate2.clone(),&mut multivariate1/&mut multivariate2);
+let mut m1= MultivariatePoly::new(vec![term0.clone(),term1.clone(),term2.clone()]);
+let mut  m2= MultivariatePoly::new(vec![term4.clone(),term3.clone()]);
 
+let q=&mut m1/&mut m2;
+println!("[{}]/[{}]={}",m1.clone(),m2.clone(),q);
+let proof=q*m2;
+println!("proof is {proof}");
+println!("m1 is {m1}");
+
+println!(" {} {:?} {}",term4.clone(),term4.cmp(&term4.neg().clone()),term4.neg());
+let mut m3= MultivariatePoly::new(vec![term4.clone(),term3.clone()]);
+let mut m4= MultivariatePoly::new(vec![term4.clone(),term3.neg().clone()]);
+println!("[{}]/[{}]={}",m3.clone(),m4.clone(),&mut m3*&mut m4);
+println!("m4 is still here {}",m4);
+
+/* assert_eq!(m1,proof);
+ */
 //println!("gcd is {}",Poly::gcdext(&p1, &p2)[0]);
 /* let polymod1=modulus.new(p1.clone());
 let polymod2=modulus.new(p2.clone());

@@ -8,14 +8,15 @@ pub mod intmod;
 pub mod poly;
 pub mod field;
 pub mod polymod;
-pub mod multivariatepoly;
+pub mod multivariate;
 
 #[cfg(test)]
 mod tests {
  
     use num_bigint::BigInt;
     use crate::intmod::PrimeField;
-    use crate::multivariatepoly::{MultiIndex, Terms};
+    use crate::multivariate::multiindex::MultiIndex;
+    use crate::multivariate::terms::Terms;
     use crate::{integers::IntUtilities, intmod::Mod};
     use crate::poly::Poly;
     use crate::poly;

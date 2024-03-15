@@ -3,246 +3,31 @@
 //! [https://scholar.google.it/scholar_url?url=https://www.mdpi.com/2227-7390/7/5/441/pdf&hl=it&sa=X&ei=jRjnZeHFOZWty9YP9Me4iAs&scisig=AFWwaea_Q77frjP2J8Auw8F8Tfl-&oi=scholarr]
 //!
 use core::fmt;
-use itertools::Itertools;
 use std::{collections::BinaryHeap, fmt::Display, iter::Sum, ops::{Add, DerefMut, Div, Mul, Neg, Rem, Sub}};
 use num_traits::{One, Zero};
 use crate::field::Field;
-#[derive(Clone,PartialEq, Eq,PartialOrd,Ord,Default,Debug)]
-pub struct MultiIndex(Vec< usize>);
-impl MultiIndex {
-    pub fn new(multi_index:&Vec<usize>)->Self{
-        let new:Vec<&usize>=multi_index.iter().rev().skip_while(|&x| *x==0usize).collect();
-        MultiIndex(multi_index.to_vec())
-    }
-    pub fn resize<'a>(&'a mut self,rhs:&'a mut Self)->(&Self,&Self){
-        while self.0.len()<rhs.0.len() {
-            self.0.append(&mut vec![0usize]);
+use super::terms::Terms;
 
-        }
-        while self.0.len()>rhs.0.len() {
-            rhs.0.append(&mut vec![0usize]);
-        }
-        (self,rhs)
-    }
-    pub fn len(&self)->usize {
-        self.0.len()
-        
-    }
-    pub fn is_empty(&self)->bool{
-        self.0.is_empty()
-
-    }
-    pub fn weight(&self)->usize{
-        self.0.iter().sum()
-    }
-    pub fn zero()->Self {
-        MultiIndex::new(&vec![])
-    }
-    pub fn is_zero(&self)->bool{
-        *self==Self::zero()||self.is_empty()
-    }
-    pub fn is_subtractable_by(&mut self,rhs:&mut Self)->bool{
-        if rhs.is_zero(){return false;}
-        let (self_resize,rhs_resize)=self.resize(rhs);    
-        let matching = self_resize.0.iter().zip(&rhs_resize.0).filter(|&(a, b)| a <= b).count();
-        matching==self_resize.len()
-    }
-    
-}
-impl<'a, 'b> Add<&'b mut MultiIndex> for &'a mut MultiIndex {
-    type Output = MultiIndex;
-/// # Example
-/// 
-/// ```
-/// use algebra::multivariatepoly::MultiIndex;
-/// let mut multi_index_1 = MultiIndex::new(&vec![2,0]);
-/// let mut multi_index_2=MultiIndex::new(&vec![1,0,1]);
-/// let sum = &mut multi_index_1+&mut multi_index_2;
-/// let expected_sum = MultiIndex::new(&vec![3,0,1]);
-/// assert_eq!(sum,expected_sum);
-///  
-/// ```
-    fn add(self:&'a mut MultiIndex, rhs: &'b mut MultiIndex) -> Self::Output {
-        if self.is_zero() {return rhs.clone();}
-        if rhs.is_zero() {return self.clone();}
-        let (self_resize,rhs_resize)=self.resize(rhs);
-        let mut sum=Vec::new();
-        for (a, b) in self_resize.0.iter().zip(rhs_resize.0.iter()) {
-            sum.push(a + b);
-        }
-        MultiIndex(sum)
-        
-    }
-}
-impl<'a, 'b> Sub<&'b mut MultiIndex> for &'a mut MultiIndex {
-    type Output = MultiIndex;
-/// # Example
-/// 
-/// ```
-/// use algebra::multivariatepoly::MultiIndex;
-/// let mut multi_index_1 = MultiIndex::new(&vec![2,2,3,0]);
-/// let mut multi_index_2=MultiIndex::new(&vec![1,0,1]);
-/// let sub = &mut multi_index_1-&mut multi_index_2;
-/// let expected_sub = MultiIndex::new(&vec![1,2,2,0]);
-/// assert_eq!(sub,expected_sub);
-///  
-/// ```
-    fn sub(self:&'a mut MultiIndex, rhs: &'b mut MultiIndex) -> Self::Output {
-        if !rhs.is_subtractable_by(self) {panic!("Cant subtract {:?} from {:?}",self,rhs)}
-        let (self_resize,rhs_resize)=self.resize(rhs);
-        let mut sub=Vec::new();
-        for (a, b) in self_resize.0.iter().zip(rhs_resize.0.iter()) {
-            sub.push(a - b);
-        }
-        MultiIndex(sub)
-        
-    }
-}
-
-#[derive(Clone, PartialEq, Eq,PartialOrd,Ord,Default,Debug)]
-pub struct Terms<F:Field>{
-    coeff:F,
-    multi_index:MultiIndex
-}
-impl <F:Field>Display for Terms<F>{
-    // This trait requires `fmt` with this exact signature.
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        
-        write!(f, "{}", Terms::print_terms(self))
-    }
-}
-impl <F:Field>Terms<F> {
-    pub fn is_constant(&self)->bool{
-        self.multi_index.is_zero()
-    }
-    pub fn total_degree(&self)->usize{
-        self.multi_index.weight()
-    }
-    pub fn zero(&self)->Self{
-        Terms::new(self.coeff.zero(), MultiIndex::zero())
-    }
-    pub fn is_zero(&self)->bool{
-        &self.zero()==self||(self.is_constant()&&self.coeff.is_zero())||self.coeff.is_zero()
-    }
-    pub fn new(coeff:F,multi_index:MultiIndex)->Self{
-        if multi_index.is_zero(){
-            return Terms{coeff,multi_index};
-        }
-        
-        let mut new_multi_index:Vec<usize>=multi_index.0.into_iter().rev().skip_while(|&x| x == 0).collect();
-        new_multi_index.reverse();
-        Terms{coeff,multi_index:MultiIndex::new(&new_multi_index)}
-
-    }
-    pub fn is_divisible_by(&mut self,rhs:&mut Self)->bool{
-
-        rhs.multi_index.is_subtractable_by(&mut self.multi_index)
-
-    }
-    pub fn number_of_variables(&self)->usize{
-        self.multi_index.0.iter().filter(|a|**a!=0usize).count()
-    }
-    pub fn print_terms(&self)->String{
-        let mut s:Vec<String>=Vec::new();
-        let mut str:String;
-        if self.is_constant()||self.is_zero(){return format!("{}",self.coeff);}
-        for i in 0..self.multi_index.len(){
-            if self.multi_index.0[i]==0{continue;}
-            if self.multi_index.0[i]==1{
-                str=format!("x_{}",i);
-
-            }
-            else {
-                str =format!("x_{}^{}",i,self.multi_index.0[i]);
-            }
-        s.push(str);
-        }
-       format!("{}*{}",self.coeff,s.join("*"))
-    }
-    
-
-    
-}
-impl <'a, F:Field> Sum for &'a Terms<F> {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.sum()
-    }
-}
-
-impl<'a, 'b,F:Field> Add<&'b Terms<F>>for &'a Terms<F> {
-    type Output = Terms<F>;
-    fn add(self, rhs: &'b Terms<F>) -> Self::Output {
-        if self.is_zero(){return rhs.clone();}
-        if rhs.is_zero(){return self.clone();}
-        if self.multi_index==rhs.multi_index {
-            let coeff=self.coeff.clone()+rhs.coeff.clone();
-            Terms::new(coeff, self.multi_index.clone())
-        } else {panic!("Cannot add {} and {}. No similar monomial!",self,rhs)}
-        }
-    }
-
-impl<'a, 'b,F:Field> Mul<&'b mut Terms<F>>for &'a mut Terms<F> {
-    type Output = Terms<F>;
-/// # Example
-/// 
-/// ```
-/// 
-/// use algebra::intmod::PrimeField;
-/// use algebra::field::Field;
-/// use num_bigint::BigInt;
-/// use algebra::multivariatepoly::MultiIndex;
-/// use algebra::multivariatepoly::Terms;
-/// let z13=PrimeField(BigInt::from(13));
-/// let mut term1 = Terms::new(z13.new(BigInt::from(9)),MultiIndex::new(&vec![2,0]));
-/// let mut term2=Terms::new(z13.new(BigInt::from(5)),MultiIndex::new(&vec![1,0,1]));
-/// let mul = &mut term1*&mut term2;
-/// let expected_mul = Terms::new(z13.new(BigInt::from(6)),MultiIndex::new(&vec![3,0,1]));
-/// assert_eq!(mul,expected_mul);
-///  
-/// ```
-    fn mul(self:&'a mut Terms<F>, rhs: &'b mut Terms<F>) -> Self::Output {
-        let coeff = self.coeff.clone()*rhs.coeff.clone();
-        let multi_index=&mut self.multi_index+&mut rhs.multi_index;
-        
-        Terms::new(coeff,multi_index)
-    }
-}
-impl<'a, 'b,F:Field> Div<&'b mut Terms<F>> for &'a mut Terms<F> {
-    type Output = Terms<F>;
-/// # Example
-/// 
-/// ```
-/// use algebra::intmod::PrimeField;
-/// use algebra::field::Field;
-/// use num_bigint::BigInt;
-/// use algebra::multivariatepoly::MultiIndex;
-/// use algebra::multivariatepoly::Terms;
-/// let z13=PrimeField(BigInt::from(13));
-///     let mut term1 = Terms::new(z13.new(BigInt::from(5)),MultiIndex::new(&vec![2,3,1]));
-///     let mut term2 = Terms::new(z13.new(BigInt::from(4)),MultiIndex::new(&vec![2,1]));
-///     let division= &mut term1 / &mut term2;
-///     let expected_division=Terms::new(z13.new(BigInt::from(11)),MultiIndex::new(&vec![0,2,1]));
-/// assert_eq!(division,expected_division);
-/// 
-/// ```
-    fn div(self:&'a mut Terms<F>, rhs: &'b mut Terms<F>) -> Self::Output {    
-        if !self.is_divisible_by(rhs) {panic!("Cannot divide!")}
-        let coeff=self.coeff.clone()*rhs.coeff.inverse();
-        let multi_index=&mut self.multi_index-&mut rhs.multi_index;
-        
-        Terms::new(coeff,multi_index)
-        }
-}
-
-#[derive(Clone, PartialEq,Eq, PartialOrd, Ord, Default,Debug)]
+#[derive(Clone, PartialEq,Eq, Default,Debug)]
 pub struct MultivariatePoly<F:Field>{
     terms:Vec<Terms<F>>
+}
+impl <F:Field> Ord for MultivariatePoly<F> {
+    fn cmp(&self, rhs: &Self) -> std::cmp::Ordering {
+        self.terms.cmp(&rhs.terms)
+    }
+    
+}
+impl <F:Field>PartialOrd for MultivariatePoly<F> {
+    fn partial_cmp(&self,rhs:&Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(rhs))
+    }
 }
 impl <F:Field>MultivariatePoly<F> {
     pub fn new(terms:Vec<Terms<F>>)->Self{
         if terms.len()==1 {return MultivariatePoly{terms};}
         let mut new_terms:Vec<Terms<F>>= terms.into_iter().skip_while(|x| x.is_zero()||x.multi_index.is_zero()).collect();
-        new_terms.sort_by(|a,b|a.multi_index.cmp(&b.multi_index));
+        new_terms.sort_by(|a,b|b.multi_index.cmp(&a.multi_index));
         let mut copy=new_terms.clone();
         let mut terms:Vec<Terms<F>>=Vec::new();
         for item in new_terms {
@@ -253,7 +38,8 @@ impl <F:Field>MultivariatePoly<F> {
         terms.push(a);
 
     }
-         MultivariatePoly{terms:terms}
+    terms.retain(|x|!x.coeff.is_zero());
+    MultivariatePoly{terms}
     }
     pub fn is_empty(&self)->bool{
         self.terms.is_empty()
@@ -272,7 +58,7 @@ impl <F:Field>MultivariatePoly<F> {
         MultivariatePoly::new(vec![Terms::zero(&self.leading_term())])
     }
     pub fn is_zero(&self)->bool{
-        self.is_empty()||*self==self.zero()
+        self.is_empty()||*self==self.zero()||self.leading_term().is_zero()
     }
     pub fn is_constant_multipoly(&self)->bool{
         todo!()    
@@ -319,7 +105,6 @@ impl<'a, 'b, F:Field> Add<&'b MultivariatePoly<F>> for &'b  MultivariatePoly<F>{
                 i+=1;
             }
             else {
-                println!("enterd here:");
                 let coeff=self.terms[i].coeff.clone()+rhs.terms[j].coeff.clone();
                 sum_terms.push(Terms::new(coeff.clone(),self.terms[i].multi_index.clone()));
                 i+=1;j+=1;
@@ -364,7 +149,6 @@ impl <'a,'b, F:Field> Mul for MultivariatePoly<F> {
             }
             c[k]=c[k].clone()+heap.pop().unwrap();
             index[s]+=1;
-
             if index[s]<rhs.number_of_terms() {
                 //insert A_s*B_fs into the heap
                 let coeff = self.terms[s].coeff.clone()*rhs.terms[index[s]].coeff.clone();
@@ -411,7 +195,6 @@ impl <'a,'b, F:Field> Mul<&'b mut MultivariatePoly<F>> for &'b mut MultivariateP
             }
             c[k]=c[k].clone()+heap.pop().unwrap();
             index[s]+=1;
-
             if index[s]<rhs.number_of_terms() {
                 //insert A_s*B_fs into the heap
                 let coeff = self.terms[s].coeff.clone()*rhs.terms[index[s]].coeff.clone();
@@ -470,8 +253,9 @@ impl <'a,'b, F:Field> Div<&'b mut MultivariatePoly<F>> for &'b mut MultivariateP
             else{
                r=r+MultivariatePoly::new(vec![lt.clone()]);
             }
-        
-            lt =(&(self.clone()-&mut q*rhs)-&r).leading_term();
+            let x =(&(self.clone()-&mut q*rhs)-&r);
+            if x.is_zero(){break;}
+            lt =x.leading_term();
         }
         q
     }
