@@ -3,7 +3,7 @@
 //! [https://scholar.google.it/scholar_url?url=https://www.mdpi.com/2227-7390/7/5/441/pdf&hl=it&sa=X&ei=jRjnZeHFOZWty9YP9Me4iAs&scisig=AFWwaea_Q77frjP2J8Auw8F8Tfl-&oi=scholarr]
 //!
 use core::fmt;
-use std::{collections::BinaryHeap, fmt::Display, iter::Sum, ops::{Add, DerefMut, Div, Mul, Neg, Rem, Sub}};
+use std::{collections::BinaryHeap, fmt::Display, ops::{Add, Div, Mul, Neg, Rem, Sub}};
 use num_traits::{One, Zero};
 use crate::field::Field;
 use super::terms::Terms;
@@ -59,6 +59,26 @@ impl <F:Field>MultivariatePoly<F> {
     }
     pub fn is_zero(&self)->bool{
         self.is_empty()||*self==self.zero()||self.leading_term().is_zero()
+    }
+    pub fn div_rem (&self, rhs:&Self) -> (MultivariatePoly<F>,MultivariatePoly<F> ){
+
+        if rhs.is_zero(){panic!("Cannot divide by zero poly!")}
+        let mut q=MultivariatePoly::zero(&self);
+        let mut r = MultivariatePoly::zero(&self);
+        let mut lt=(&(self-&(&q*rhs))-&r).leading_term();
+        while !lt.is_zero(){
+            if lt.is_divisible_by(&mut rhs.leading_term()){
+                let t= &mut lt/ &mut rhs.leading_term();
+                q=&q+&MultivariatePoly::new(vec![t]);
+            }
+            else{
+               r=r+MultivariatePoly::new(vec![lt.clone()]);
+            }
+            let x =(&(self-&(&q*rhs))-&r);
+            if x.is_zero(){break;}
+            lt =x.leading_term();
+        }
+        (q,r)
     }
     pub fn is_constant_multipoly(&self)->bool{
         todo!()    
@@ -124,22 +144,22 @@ impl<'a, 'b, F:Field> Add<&'b MultivariatePoly<F>> for &'b  MultivariatePoly<F>{
     }
 }
 
-impl <'a,'b, F:Field> Mul for MultivariatePoly<F> {
-    type Output = Self;
-    fn mul(mut self, mut rhs:Self) -> Self::Output {
+impl <'a,'b, F:Field> Mul <&'b MultivariatePoly<F>> for &'b  MultivariatePoly<F>{
+    type Output = MultivariatePoly<F>;
+    fn mul(self, rhs:Self) -> Self::Output {
         if self.is_zero() || rhs.is_zero() {
             return self.zero();}
         let mut c: Vec<MultivariatePoly<F>>=vec![self.zero()];
         let mut k=0usize;
         let mut s = 0usize;
-        let mut gamma=&mut self.terms[0].multi_index+&mut rhs.terms[0].multi_index;
+        let mut gamma=&self.terms[0].multi_index+&rhs.terms[0].multi_index;
         let mut index: Vec<usize>;
         index = (0..self.number_of_terms()).into_iter().map(|_| 0usize).collect();
         //initialize heap(a,B1)
         let mut heap: BinaryHeap<MultivariatePoly<F>> = BinaryHeap::new();
         for i in 0..self.number_of_terms() {
             let coeff = self.terms[i].coeff.clone()*rhs.terms[0].coeff.clone();
-            let multi_index=& mut self.terms[i].multi_index+& mut rhs.terms[0].multi_index;
+            let multi_index=&self.terms[i].multi_index+&rhs.terms[0].multi_index;
             heap.push(MultivariatePoly::new(vec![Terms::new(coeff,multi_index)]));
         }
         while !heap.is_empty() { 
@@ -152,7 +172,7 @@ impl <'a,'b, F:Field> Mul for MultivariatePoly<F> {
             if index[s]<rhs.number_of_terms() {
                 //insert A_s*B_fs into the heap
                 let coeff = self.terms[s].coeff.clone()*rhs.terms[index[s]].coeff.clone();
-                let term=&mut self.terms[s].multi_index+& mut rhs.terms[index[s]].multi_index;
+                let term=&self.terms[s].multi_index+&rhs.terms[index[s]].multi_index;
                 heap.push(MultivariatePoly::new(vec![Terms::new(coeff,term)]));
 
             }
@@ -237,26 +257,21 @@ impl <'a,'b,F:Field> Sub<&'b MultivariatePoly<F>> for &'b MultivariatePoly<F>{
         self+&rhs.neg()
     }
 }
+impl <'a,'b, F:Field> Div<&'b MultivariatePoly<F>> for &'b MultivariatePoly<F>{
+    type Output = MultivariatePoly<F>;
+    fn div(self, rhs: Self) -> Self::Output {
+        self.div_rem(rhs).0
+    }
+}
 impl <'a,'b, F:Field> Div<&'b mut MultivariatePoly<F>> for &'b mut MultivariatePoly<F>{
     type Output = MultivariatePoly<F>;
     fn div(self, rhs: Self) -> Self::Output {
-
-        if rhs.is_zero(){panic!("Cannot divide by zero poly!")}
-        let mut q=MultivariatePoly::zero(&self);
-        let mut r = MultivariatePoly::zero(&self);
-        let mut lt=(&(self.clone()-&mut q*rhs)-&r).leading_term();
-        while !lt.is_zero(){
-            if lt.is_divisible_by(&mut rhs.leading_term()){
-                let t= &mut lt/ &mut rhs.leading_term();
-                q=&q+&MultivariatePoly::new(vec![t]);
-            }
-            else{
-               r=r+MultivariatePoly::new(vec![lt.clone()]);
-            }
-            let x =(&(self.clone()-&mut q*rhs)-&r);
-            if x.is_zero(){break;}
-            lt =x.leading_term();
-        }
-        q
+        self.div_rem(rhs).0
+    }
+}
+impl <'a,'b, F:Field> Rem<&'b MultivariatePoly<F>> for &'b MultivariatePoly<F>{
+    type Output = MultivariatePoly<F>;
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.div_rem(rhs).1
     }
 }

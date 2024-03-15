@@ -11,9 +11,6 @@ pub struct Terms<F:Field>{
 }
 impl <F:Field> Ord for Terms<F> {
     fn cmp(&self, rhs: &Self) -> std::cmp::Ordering {
-       /*  if self.multi_index==rhs.multi_index{
-            self.coeff.cmp(&rhs.coeff)
-        } else { */
         self.multi_index.cmp(&rhs.multi_index)
     }   
     
@@ -46,12 +43,12 @@ impl <F:Field>Terms<F> {
     }
     pub fn new(coeff:F,multi_index:MultiIndex)->Self{
         if multi_index.is_zero(){
-            return Terms{coeff,multi_index};
+            return Terms{coeff,multi_index:MultiIndex::new(&vec![0usize])};
         }
         
-        let mut new_multi_index:Vec<usize>=multi_index.0.into_iter().rev().skip_while(|&x| x == 0).collect();
-        new_multi_index.reverse();
-        Terms{coeff,multi_index:MultiIndex::new(&new_multi_index)}
+        //let mut new_multi_index:Vec<usize>=multi_index.0.into_iter().rev().skip_while(|&x| x == 0).collect();
+        //new_multi_index.reverse();
+        Terms{coeff,multi_index:multi_index}
 
     }
     pub fn is_divisible_by(&mut self,rhs:&mut Self)->bool{
