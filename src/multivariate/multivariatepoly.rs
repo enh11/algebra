@@ -1,7 +1,8 @@
 //! This library contains utilities for Multivariate polynomial.
 //! Good references for algorithms below is 
 //! [https://scholar.google.it/scholar_url?url=https://www.mdpi.com/2227-7390/7/5/441/pdf&hl=it&sa=X&ei=jRjnZeHFOZWty9YP9Me4iAs&scisig=AFWwaea_Q77frjP2J8Auw8F8Tfl-&oi=scholarr]
-//!
+//! [David A. Cox John Little Donal O'Shea Ideals,Varieties, and Algorithms]
+
 use core::fmt;
 use std::{collections::BinaryHeap, fmt::Display, ops::{Add, Div, Mul, Neg, Rem, Sub}};
 use crate::field::Field;
