@@ -1,13 +1,13 @@
-use std::ops::{Add,Sub,Mul};
+use std::ops::{Add,Sub};
 
 #[derive(Clone,PartialEq, Eq,PartialOrd,Ord,Default,Debug)]
 pub struct MultiIndex(pub Vec< usize>);
 impl MultiIndex {
     pub fn new(multi_index:&Vec<usize>)->Self{
-        
-        let _ = multi_index.iter().rev().skip_while(|&&x| x==0usize).collect::<Vec<&usize>>();
-        if multi_index.is_empty(){return MultiIndex(vec![0])}
-        MultiIndex(multi_index.to_vec())
+        let mut new_index = multi_index.iter().rev().copied().skip_while(|&x| x==0usize).collect::<Vec<usize>>();
+        new_index.reverse();
+        if new_index.is_empty(){return MultiIndex(vec![0])}
+        MultiIndex(new_index)
     }
 
     pub fn resize<'a>(&'a mut self,rhs:&'a mut Self)->(&Self,&Self){
@@ -43,19 +43,6 @@ impl MultiIndex {
         let matching = self_resize.0.iter().zip(&rhs_resize.0).filter(|&(a, b)| a <= b).count();
         matching==self_resize.len()
     }    
-}
-impl<'a, 'b> Add<&'b MultiIndex> for &'a MultiIndex {
-    type Output = MultiIndex;
-    fn add(self, rhs: &'b MultiIndex) -> Self::Output {
-        if self.is_zero() {return rhs.clone();}
-        if rhs.is_zero() {return self.clone();}
-        let mut sum=Vec::new();
-        for (a, b) in self.0.iter().zip(rhs.0.iter()) {
-            sum.push(a + b);
-        }
-        MultiIndex::new(&sum)
-        
-     }
 }
 impl<'a, 'b> Add<&'b mut MultiIndex> for &'a mut MultiIndex {
     type Output = MultiIndex;

@@ -42,13 +42,13 @@ impl <F:Field>Terms<F> {
         &self.zero()==self||(self.is_constant()&&self.coeff.is_zero())||self.coeff.is_zero()
     }
     pub fn new(coeff:F,multi_index:MultiIndex)->Self{
+        
+        let new_multi_index=MultiIndex::new(&multi_index.0);
         if multi_index.is_zero(){
             return Terms{coeff,multi_index:MultiIndex::new(&vec![0usize])};
         }
         
-        //let mut new_multi_index:Vec<usize>=multi_index.0.into_iter().rev().skip_while(|&x| x == 0).collect();
-        //new_multi_index.reverse();
-        Terms{coeff,multi_index:multi_index}
+        Terms{coeff,multi_index:new_multi_index}
 
     }
     pub fn is_divisible_by(&mut self,rhs:&mut Self)->bool{
