@@ -5,9 +5,8 @@
 #[macro_use]
 pub mod integers;
 pub mod intmod;
-pub mod poly;
 pub mod field;
-pub mod polymod;
+pub mod univariate;
 pub mod multivariate;
 
 #[cfg(test)]
@@ -18,7 +17,7 @@ mod tests {
     use crate::multivariate::multiindex::MultiIndex;
     use crate::multivariate::terms::Terms;
     use crate::{integers::IntUtilities, intmod::Mod};
-    use crate::poly::Poly;
+    use crate::univariate::poly::Poly;
     use crate::poly;
     use crate::intmod::MathError::QuadraticNonResidueModP;
 #[test]

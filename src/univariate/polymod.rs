@@ -1,7 +1,8 @@
 use core::fmt;
 use std::ops::{Add, Sub,Neg,Mul};
+use crate::field::Field;
 
-use crate::{poly::Poly, field::Field};
+use super::poly::Poly;
 #[derive(Debug,PartialEq,Eq, PartialOrd, Ord,Clone)]
 pub struct Modulus<F>(pub Poly<F>);
 impl <F: Field>Modulus<F> {

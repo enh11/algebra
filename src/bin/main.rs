@@ -5,8 +5,6 @@ use algebra::multivariate::multiindex::MultiIndex;
 use algebra::multivariate::terms::Terms;
 use algebra::multivariate::multivariatepoly::{MultivariatePoly};
 use algebra::poly;
-use algebra::polymod::{Modulus, PolyMod};
-use algebra::{integers::IntUtilities, poly::Poly};
 use num_bigint::{BigUint,BigInt,RandomBits, ToBigInt};
 use algebra::intmod::{Mod, PrimeField};
 use num_traits::{One, Zero};

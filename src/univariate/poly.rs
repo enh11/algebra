@@ -18,7 +18,7 @@ impl <F:Field>fmt::Display for Poly<F> {
 /// ```
 /// #[macro_use] extern crate algebra;
 /// use num_bigint::BigInt;
-/// use algebra::poly::Poly;
+/// use algebra::univariate::poly::Poly;
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
@@ -30,7 +30,7 @@ impl <F:Field>fmt::Display for Poly<F> {
 #[macro_export]
 macro_rules! poly {
     ($($c:expr),+ $(,)*) => {
-        $crate::poly::Poly::new_from_coeffs(&[$($c,)*])
+        $crate::univariate::poly::Poly::new_from_coeffs(&[$($c,)*])
     };
 }
 
@@ -88,7 +88,7 @@ impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
 /// ```
 /// #[macro_use] extern crate algebra;
 /// use num_bigint::BigInt;
-/// use algebra::poly::Poly;
+/// use algebra::univariate::poly::Poly;
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
@@ -107,7 +107,6 @@ impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
 /// assert_eq!(sub,&p1-&p2);
 /// assert_eq!(prod,&p1*&p2);
 /// ```
-/// 
     fn add(self, rhs: Self) -> Self::Output {
         let zero=self.coeffs[0].clone().zero();
         if rhs.is_zero(){return self.clone();}
@@ -232,7 +231,7 @@ impl <F:Field> Poly<F>{
 /// # Example
 /// ```
 /// use num_bigint::BigInt;
-/// use algebra::poly::Poly;
+/// use algebra::univariate::poly::Poly;
 /// use algebra::intmod::{Mod,PrimeField};
 /// use algebra::field::Field;
 /// let prime_base=BigInt::from(13);
