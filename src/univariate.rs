@@ -4,8 +4,10 @@ pub mod polymod;
 
 #[cfg(test)]
 mod tests {
+use std::ops::Neg;
+
 use num_bigint::BigInt;
-use crate::intmod::PrimeField;
+use crate::{intmod::PrimeField, univariate::poly::Poly};
 #[test]
 fn test_add_poly() {
 let z13=PrimeField(BigInt::from(13));
@@ -31,4 +33,14 @@ let expected_rem=poly!(z13.new(BigInt::from(6)));
     assert_eq!(expected_rem,&p1%&p2);
 
     }
+#[test]
+fn gcdext_univariate() {
+let z13=PrimeField(BigInt::from(13));
+let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.zero(), z13.new(BigInt::from(10)),z13.new(BigInt::from(2))]);
+let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)),z13.zero(),z13.one().neg()]);
+let gcd = Poly::gcdext(&p1,&p2);
+
+let expected_gcd= Poly::new_from_coeffs(&[z13.new(BigInt::from(11)),z13.new(BigInt::from(2))]);
+assert_eq!(gcd[2],expected_gcd);
+}
 }

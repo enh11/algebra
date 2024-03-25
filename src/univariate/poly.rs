@@ -260,6 +260,25 @@ pub fn multiple(&mut self, alpha:&F)->Poly<F>{
     self.coeffs[i]=self.coeffs[i].clone()*alpha;}
     Poly::new_from_coeffs(&mut self.coeffs)
 }
+/// # Example
+/// This function compute Bezout identity for two polynomials p1 and p2. The output is a Vec<Pol<F>>
+/// [u,v,d], where p1*u+p2*v=d. In particular d is the gcd. Remember that the gcd
+/// is unique up to non_zero scalar multiplication. 
+/// ```
+/// use std::ops::Neg;
+/// use num_bigint::BigInt;
+/// use algebra::univariate::poly::Poly;
+/// use algebra::intmod::{Mod,PrimeField};
+/// use algebra::field::Field;
+/// let prime_base=BigInt::from(13);
+/// let z13=PrimeField(BigInt::from(13));
+/// let p1 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)), z13.zero(), z13.new(BigInt::from(10)),z13.new(BigInt::from(2))]);
+/// let p2 = Poly::new_from_coeffs(&[z13.new(BigInt::from(1)),z13.zero(),z13.one().neg()]);
+/// let gcd = Poly::gcdext(&p1,&p2);
+/// let expected_gcd= Poly::new_from_coeffs(&[z13.new(BigInt::from(11)),z13.new(BigInt::from(2))]);
+/// assert_eq!(gcd[2],expected_gcd);
+/// ```
+/// 
 pub fn gcdext(g:&Poly<F>,h:&Poly<F>)->Vec<Poly<F>>{
     let mut u = g.one(); let mut d=g.clone();
     let mut v1=h.zero(); let mut v3=h.clone();
