@@ -242,6 +242,12 @@ impl<'a, 'b, F:Field> Add<&'b MultivariatePoly<F>> for &'b  MultivariatePoly<F>{
         MultivariatePoly::new(sum_terms)
     }
 }
+impl <F:Field> Mul <MultivariatePoly<F>> for MultivariatePoly<F>{
+    type Output = Self;
+    fn mul(self, rhs: MultivariatePoly<F>) -> Self::Output {
+        &self*&rhs
+    }
+}
 
 impl <'a,'b, F:Field> Mul <&'b MultivariatePoly<F>> for &'b  MultivariatePoly<F>{
     type Output = MultivariatePoly<F>;
