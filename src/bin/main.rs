@@ -1,17 +1,21 @@
 
+use termion::cursor::Goto;
+use termion::{self, color, style};
+use std::error::Error;
+use std::io::{stdout, Read, Write};
 use std::ops::Neg;
-use std::vec;
+use std::{io, vec};
 use algebra::multivariate::multiindex::MultiIndex;
 use algebra::multivariate::terms::Terms;
 use algebra::multivariate::multivariatepoly::{MultivariatePoly};
 use algebra::poly;
 use num_bigint::{BigUint,BigInt,RandomBits, ToBigInt};
 use algebra::intmod::{Mod, PrimeField};
-use num_traits::{One, Zero};
+use num_traits::{int, One, Zero};
 
 
 fn main() {
-    let z13=PrimeField(BigInt::from(13));
+/*     let z13=PrimeField(BigInt::from(13));
 
     let index0=MultiIndex::new(&vec![2,1]);
     let index1=MultiIndex::new(&vec![1,2]);
@@ -52,7 +56,7 @@ assert_eq!(multi_div.0[1],expected_q1);
 assert_eq!(multi_div.1,expected_reminder);
 println!("everything ok");
 
-
+ */
 /*  
 let q=&m1/&m2;
 let r = &m1%&m2;
@@ -77,16 +81,58 @@ println!("a poly mod {} with coeffs {:?}",polymod2,polymod2.poly.coeffs); */
 
 
 
-        /* PROMPT CMD
+            /* PROMPT CMD */ 
+            
+            println!("{}{}",termion::clear::All,termion::cursor::Goto(1,1));       
+            println!("{}{}{}Welcome to the Algebra!",color::Fg(color::Magenta),style::Italic,style::Bold);
+            println!("{}Type 'quit' to exit.",color::Fg(color::LightYellow));   
+            let mut line=1usize;
+            loop {
+                print!("{}{}in{line}: ",color::Fg(color::Blue),style::NoItalic);
+                io::stdout().flush().unwrap();
+                let mut input_string  =String::new();
+                io::stdin().read_line(&mut input_string).expect("Failed to read the line");
+                let commands=input_string.trim();
+                if commands=="quit" { 
+                    println!("{}Mandi biel!",color::Fg(color::LightMagenta));
+                    break;
+                }
+                match evaluate_expression(&commands) {
+                    Ok(result) => println!("Result: {}", result),
+                    Err(err) => println!("Error: {}", err),
+                }
+                line+=1;
+
+
+            }   
+
+    }
+
+    fn evaluate_expression(expression:&str)->Result<BigInt,String> {
         
-        println!("Please type something, or "quit" to escape:");
-        let mut input_string = String::new();
-    
-        while input_string.trim() != "quit" {
-            input_string.clear();
-            io::stdin().read_line(&mut input_string).unwrap();
-            println!("You wrote {}", input_string);
+        let parts: Vec<&str> = expression.split_whitespace().collect();
+        if parts.len() == 3 {
+            let x=parts[0].parse::<BigInt>();
+            let y=parts[2].parse::<BigInt>();
+            let out:Result<BigInt, String> = match (x,y) {
+                (Ok(num1),Ok(num2))=>{
+                    let result = match parts[1] {
+                        "+"=>num1+num2,
+                        "-"=>num1-num2,
+                        "*"=>num1*num2,
+                        "/"=>num1/num2,
+                        "%"=>num1%num2,
+                        _ => return Err("Unsupported operator".to_string()),
+                    };
+                    Ok(result)
+                }
+                _=> return Err("Invalid operands".to_string()),
+                
+            };
+            out
+        } else {
+            return Err("not binary operation".to_string())
         }
-        println!("See you later!"); */
+        
     }
     
