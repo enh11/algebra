@@ -252,12 +252,12 @@ impl Mod {
 /// let h=Mod::new(BigInt::from(4),PrimeField(BigInt::from(7)));
 /// let i=Mod::new(BigInt::from(5),PrimeField(BigInt::from(11)));
 /// let j=Mod::new(BigInt::from(9),PrimeField(BigInt::from(13)));
-/// let chinese=Mod::chinese(&[f,g,h,i,j].to_vec());
+/// let chinese=Mod::chinese(vec![&f,&g,&h,&i,&j]);
 /// let expected_mod=Some(Mod { n: BigInt::from(8992), modulus:PrimeField(BigInt::from(15015))});
 /// assert_eq!(expected_mod,chinese);
 /// 
 /// ```
-    pub fn chinese(moduli:&Vec<Mod>)->Option<Mod>{
+    pub fn chinese(moduli:Vec<&Mod>)->Option<Mod>{
         let mut m=moduli[0].modulus.0.clone();
         let mut x=moduli[0].n.clone();
         

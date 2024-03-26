@@ -46,7 +46,7 @@ fn test_chinese() {
     let a=Mod::new(BigInt::from(8),PrimeField(BigInt::from(11)));
     let b=Mod::new(BigInt::from(4),PrimeField(BigInt::from(13)));
     let expected_mod=Some(Mod::new(BigInt::from(30),PrimeField(BigInt::from(143))));
-    assert_eq!(expected_mod,Mod::chinese(&[a,b].to_vec()));
+    assert_eq!(expected_mod,Mod::chinese(vec![&a,&b]));
 
 }
 #[test]
@@ -62,20 +62,19 @@ assert_eq!(bez,[expected_pol_u,expected_pol_v,expected_pol_d]);
 }
 #[test]
 fn text_poly_ops(){
-
-let z13=PrimeField(BigInt::from(13));
-let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
-let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
-let add = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(7)),z13.new(BigInt::from(5)));
-let sub = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(10)),z13.new(BigInt::from(1)));
-let prod = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(12)),z13.new(BigInt::from(6)),z13.new(BigInt::from(6)));
-let quoz= poly!(z13.new(BigInt::from(8)),z13.new(BigInt::from(5)));
-let rem = poly!(z13.new(BigInt::from(6)));
-assert_eq!(add,&p1+&p2);
-assert_eq!(sub,&p1-&p2);
-assert_eq!(prod,&p1*&p2);
-assert_eq!(quoz,&p1/&p2);
-assert_eq!(rem,&p1%&p2);
+    let z13=PrimeField(BigInt::from(13));
+    let p1 = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(2)),z13.new(BigInt::from(3)));
+    let p2 = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(2)));
+    let add = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(7)),z13.new(BigInt::from(5)));
+    let sub = poly!(z13.new(BigInt::from(1)), z13.new(BigInt::from(10)),z13.new(BigInt::from(1)));
+    let prod = poly!(z13.new(BigInt::from(5)), z13.new(BigInt::from(12)),z13.new(BigInt::from(6)),z13.new(BigInt::from(6)));
+    let quoz= poly!(z13.new(BigInt::from(8)),z13.new(BigInt::from(5)));
+    let rem = poly!(z13.new(BigInt::from(6)));
+    assert_eq!(add,&p1+&p2);
+    assert_eq!(sub,&p1-&p2);
+    assert_eq!(prod,&p1*&p2);
+    assert_eq!(quoz,&p1/&p2);
+    assert_eq!(rem,&p1%&p2);
 
 }
 #[test]
@@ -88,21 +87,20 @@ assert_ne!(Poly::is_coprime(&p1,&p2),true);
 }
 #[test]
 fn test_sqrt_mod_prime(){
-
-let z17=PrimeField(BigInt::from(17));
-let mut n=z17.new(BigInt::from(15));
-let mut m=z17.new(BigInt::from(3));
-let expected_sqrt=z17.new(BigInt::from(7));
-assert_eq!(expected_sqrt,n.sqrt_mod_prime());
-assert_eq!(Err(QuadraticNonResidueModP),m.check_sqrt_mod_prime());
+    let z17=PrimeField(BigInt::from(17));
+    let mut n=z17.new(BigInt::from(15));
+    let mut m=z17.new(BigInt::from(3));
+    let expected_sqrt=z17.new(BigInt::from(7));
+    assert_eq!(expected_sqrt,n.sqrt_mod_prime());
+    assert_eq!(Err(QuadraticNonResidueModP),m.check_sqrt_mod_prime());
 }
 #[test]
 #[should_panic(expected = "Cannot divide!")]
 fn monomial_division_should_panic(){
-let z13=PrimeField(BigInt::from(13));
-let mut mono1 = Terms::new(z13.new(BigInt::from(3)),MultiIndex::new(&vec![2,0]));
-let mut mono2=Terms::new(z13.new(BigInt::from(4)),MultiIndex::new(&vec![1,0,1]));
-let _ = &mut mono1/&mut mono2;
+    let z13=PrimeField(BigInt::from(13));
+    let mut mono1 = Terms::new(z13.new(BigInt::from(3)),MultiIndex::new(&vec![2,0]));
+    let mut mono2=Terms::new(z13.new(BigInt::from(4)),MultiIndex::new(&vec![1,0,1]));
+    let _ = &mut mono1/&mut mono2;
 
 }
 }

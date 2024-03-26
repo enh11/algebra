@@ -81,7 +81,12 @@ impl <F:Field> Poly <F> {
         self==&self.one()
     }
 }
-
+impl <F:Field>Add<Poly<F>>for  Poly<F> {
+    type Output = Poly<F>;
+    fn add(self, rhs: Poly<F>) -> Self::Output {
+        &self+&rhs
+    }
+}
 impl <'a,'b,F:Field>Add<&'b Poly<F>>for  &'b Poly<F> {
     type Output=Poly<F>;
 /// # Example
@@ -160,6 +165,15 @@ impl <'a,'b,F:Field>Sub<&'b Poly<F>>for  &'b Poly<F> {
         }
 Poly::new_from_coeffs(&mut sub)
     }
+}
+impl <F:Field> Mul<Poly<F>> for Poly<F>{
+    type Output=Poly<F>;
+    fn mul(self, rhs: Poly<F>) -> Self::Output {
+        &self*&rhs
+    }
+    
+    
+
 }
 impl <'a,'b,F:Field>Mul<&'b Poly<F>>for  &'b Poly<F>{
     type Output=Poly<F>;

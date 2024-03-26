@@ -47,8 +47,41 @@ impl<F:Field>PolyMod<F>{
         if !bez[2].is_constant() {panic!("{} is not invertible mod {}",self.poly,self.modulus.0);}
         PolyMod::new(bez[0].clone().multiple(&bez[2].coeffs[0].inverse()),self.modulus.clone())
     }
-    pub fn chinese(g:&Self,h:&Self)->Self {
-        todo!()
+/// # Example
+/// ```
+/// #[macro_use] extern crate algebra;
+/// use num_bigint::BigInt;
+/// use algebra::univariate::polymod::{PolyMod,Modulus};
+/// use algebra::univariate::poly::Poly;
+/// use algebra::intmod::{Mod,PrimeField};
+/// use algebra::field::Field;
+/// let prime_base=BigInt::from(13);
+/// let z13=PrimeField(BigInt::from(13));
+/// let modulus1=Modulus(Poly::new_from_coeffs(&[z13.one(), z13.one(), z13.one()]));
+/// let modulus2 = Modulus(Poly::new_from_coeffs(&[z13.one(), z13.one()]));
+/// let p1 = modulus1.new(Poly::new_from_coeffs(&[z13.one(), z13.one()]));
+/// let p2=modulus2.new(Poly::new_from_coeffs(&[z13.one(), z13.new(BigInt::from(2))]));
+/// let chinese = PolyMod::chinese(vec![&p1,&p2]).unwrap();
+/// let chinese_proof1=modulus1.new(chinese.clone().poly);
+/// let chinese_proof2=modulus2.new(chinese.clone().poly);
+/// 
+/// assert_eq!(chinese_proof1,p1);
+/// assert_eq!(chinese_proof2,p2);
+/// 
+/// ```
+    pub fn chinese(moduli:Vec<&PolyMod<F>>)->Option<Self> {
+        let mut m=moduli[0].modulus.0.clone();
+        let mut x=moduli[0].poly.clone();
+        
+        for i in 1..moduli.len() {
+            let uvd=Poly::gcdext(&moduli[i].modulus.0, &m);
+            if uvd[2]!=x.one() {return None;} 
+            x=(&uvd[0]*&moduli[i].modulus.0)*x+&(&uvd[1]*&moduli[i].poly)*&m;
+            m=&m*&moduli[i].modulus.0;
+            x=&x%&m;               
+        }
+            Some(PolyMod::new(x, Modulus(m)))
+
     }
 }
 impl<F:Field> fmt::Display for PolyMod<F> {
