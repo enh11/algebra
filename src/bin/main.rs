@@ -1,4 +1,5 @@
 
+use algebra::continued_functions::FiniteContinuedFunctions;
 use termion::cursor::Goto;
 use termion::{self, color, style};
 use std::error::Error;
@@ -12,9 +13,14 @@ use algebra::poly;
 use num_bigint::{BigUint,BigInt,RandomBits, ToBigInt};
 use algebra::intmod::{Mod, PrimeField};
 use num_traits::{int, One, Zero};
+use num_rational::BigRational;
 
 
 fn main() {
+    let f=BigRational::new(BigInt::from(15),BigInt::from(11));
+    println!("{}",f.is_integer());
+    let cf=FiniteContinuedFunctions::from_rational(f);
+    println!("{:?}",cf);
 /*     let z13=PrimeField(BigInt::from(13));
 
     let index0=MultiIndex::new(&vec![2,1]);
@@ -81,7 +87,7 @@ println!("a poly mod {} with coeffs {:?}",polymod2,polymod2.poly.coeffs); */
 
 
 
-            /* PROMPT CMD */ 
+            /* /* PROMPT CMD */ 
             
             println!("{}{}",termion::clear::All,termion::cursor::Goto(1,1));       
             println!("{}{}{}Welcome to the Algebra!",color::Fg(color::Magenta),style::Italic,style::Bold);
@@ -105,7 +111,7 @@ println!("a poly mod {} with coeffs {:?}",polymod2,polymod2.poly.coeffs); */
 
 
             }   
-
+ */
     }
 
     fn evaluate_expression(expression:&str)->Result<BigInt,String> {

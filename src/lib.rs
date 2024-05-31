@@ -8,6 +8,7 @@ pub mod intmod;
 pub mod field;
 pub mod univariate;
 pub mod multivariate;
+pub mod continued_functions;
 
 #[cfg(test)]
 mod tests {
