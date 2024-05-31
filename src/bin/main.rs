@@ -20,6 +20,9 @@ fn main() {
     let f=BigRational::new(BigInt::from(15),BigInt::from(11));
     let cf=FiniteContinuedFunctions::from_rational(f);
     println!("{}",cf);
+    let cf = FiniteContinuedFunctions::new(vec![BigInt::one(), BigInt::from(2), BigInt::one(), BigInt::from(3)]);
+    let ratio = cf.to_rational();
+    println!("{ratio}");
 /*     let z13=PrimeField(BigInt::from(13));
 
     let index0=MultiIndex::new(&vec![2,1]);
