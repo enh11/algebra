@@ -18,9 +18,8 @@ use num_rational::BigRational;
 
 fn main() {
     let f=BigRational::new(BigInt::from(15),BigInt::from(11));
-    println!("{}",f.is_integer());
     let cf=FiniteContinuedFunctions::from_rational(f);
-    println!("{:?}",cf);
+    println!("{}",cf);
 /*     let z13=PrimeField(BigInt::from(13));
 
     let index0=MultiIndex::new(&vec![2,1]);

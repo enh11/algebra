@@ -1,7 +1,10 @@
+use core::fmt;
+use std::fmt::Display;
+
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::Zero;
-#[derive(Debug, Clone,Eq,PartialEq,PartialOrd, Ord)]
+#[derive(Debug,Clone,Eq,PartialEq,PartialOrd, Ord)]
 
 pub struct FiniteContinuedFunctions{
     pub partial_quotients:Vec<BigInt>
@@ -38,6 +41,13 @@ impl FiniteContinuedFunctions{
 
     FiniteContinuedFunctions::new(partial_quotients ) 
 }
+}
+impl Display for FiniteContinuedFunctions{
+    // This trait requires `fmt` with this exact signature.
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+               
+        write!(f,"{:?}",self.partial_quotients)}
+   
 }
 pub fn quotient_reminder(r:&BigRational)->[BigInt;2]{
     let quotient=r.numer()/r.denom();
