@@ -17,12 +17,15 @@ use num_rational::BigRational;
 
 
 fn main() {
-    let f=BigRational::new(BigInt::from(15),BigInt::from(11));
+    let f=BigRational::new(BigInt::from(120),BigInt::from(49));
     let cf=FiniteContinuedFunctions::from_rational(f);
     println!("{}",cf);
-    let cf = FiniteContinuedFunctions::new(vec![BigInt::one(), BigInt::from(2), BigInt::one(), BigInt::from(3)]);
-    let ratio = cf.to_rational();
-    println!("{ratio}");
+for i in 1..=cf.partial_quotients.len(){
+    let c=cf.nth_convergent(i);
+    println!("{:?}",c);
+}
+    
+    
 /*     let z13=PrimeField(BigInt::from(13));
 
     let index0=MultiIndex::new(&vec![2,1]);

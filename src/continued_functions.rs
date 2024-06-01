@@ -18,6 +18,9 @@ impl FiniteContinuedFunctions{
             partial_quotients:q
         }
     }
+    pub fn len(&self)->usize{
+        self.partial_quotients.len()
+    }
     pub fn from_rational(rational:BigRational)->Self{
         
         let mut partial_quotients:Vec<BigInt>=Vec::new();
@@ -44,15 +47,18 @@ impl FiniteContinuedFunctions{
 
     FiniteContinuedFunctions::new(partial_quotients ) 
 }
-pub fn to_rational(&self)->BigRational{
-    let pq_matrix :Matrix2<BigInt>= self.partial_quotients.iter().map(|a|
+pub fn to_rational(&self)->Option<BigRational>{
+    self.nth_convergent(self.partial_quotients.len())  
+}
+pub fn nth_convergent(&self,n:usize)->Option<BigRational>{
+    if n>self.len() {return None;}
+    let pnqn_matrix:Matrix2<BigInt>= (0..n).zip(self.partial_quotients.clone()).map(|(_,a)| 
         Matrix2::from_rows(&[RowVector2::new(a.clone(), BigInt::one()),
         RowVector2::new(BigInt::one(),BigInt::zero())])).product();
-    let first_column =pq_matrix.column(0);
-    BigRational::new(first_column.x.clone(), first_column.y.clone())
-    
-    
-        
+
+    let first_column =pnqn_matrix.column(0);
+    let rational =     BigRational::new(first_column.x.clone(), first_column.y.clone());
+    Some(rational)
 }
 }
 impl Display for FiniteContinuedFunctions{
