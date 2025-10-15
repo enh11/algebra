@@ -1,6 +1,7 @@
 //! This library contains utilities for integer number
 //! Good references for this algorithm is [H.Cohen A course in computational number theory] 
 //! and [H. Cohen Handbook ok elliptic and hyperelliptic curves cryptography]
+//! Work in progress
 //!
 #[macro_use]
 pub mod integers;
